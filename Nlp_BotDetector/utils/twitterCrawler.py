@@ -38,11 +38,14 @@ class MyStreamListener(tweepy.StreamListener):
 			return False
 			# returning non-False reconnects the stream, with backoff.
 
-	
+# init stuff
 TWITTER_API_KEY, TWITTER_API_SECRET_KEY, TWITTER_API_ACCESS_TOKEN, TWITTER_API_ACCESS_TOKEN_SECRET = twitterCredentials.getKeys()
-auth = tweepy.OAuthHandler('TWITTER_API_KEY', 'TWITTER_API_SECRET_KEY')
-auth.set_access_token('TWITTER_API_ACCESS_TOKEN', 'TWITTER_API_ACCESS_TOKEN_SECRET')
+auth = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_SECRET_KEY)
+auth.set_access_token(TWITTER_API_ACCESS_TOKEN, TWITTER_API_ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
+print('Loaded API keys!')
+# Initialize streamer
+print('Initializing Streamer...')
 myStream.filter(track=['trump'], languages=["en"], async=True)
