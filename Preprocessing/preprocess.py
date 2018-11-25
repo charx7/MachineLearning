@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 # read csv and take only the text
-data = pd.read_csv("tweets.csv")
+data = pd.read_csv("../data/tweets.csv")
 print("Read {0:d} tweets".format(len(data)))
 raw_tweets = data["text"][:100]
 print(raw_tweets[:10])
