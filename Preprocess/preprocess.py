@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 # read csv and take only the text
 data = pd.read_csv("../data/tweets.csv")
 print("Read {0:d} tweets".format(len(data)))
-raw_tweets = data["text"][:100]
+raw_tweets = data["text"][:1000]
 print(raw_tweets[:10])
 
 tokenized_tweets = []
@@ -27,11 +27,8 @@ for tweet in raw_tweets:
     # spelling correction and stemming
     for i in range(len(tokenized_tweet)): # stems names!!
         tokenized_tweet[i] = stemmer.stem(tokenized_tweet[i])
-    tokenized_tweets.append(tokenized_tweet)    
-print("Prerpocessing ends \n")
+    tokenized_tweets.append(tokenized_tweet)
+print("Preprocessing ends \n")
 print("Example result of cleaning and tokenizing: \n")
 print(raw_tweets[9])
 print(tokenized_tweets[9])
-
-
-

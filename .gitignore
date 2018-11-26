@@ -1,4 +1,5 @@
 /.ipynb_checkpoints/
 /utils/__pycache__/
+/preProcess/__pycache__/
 /data/
 /.idea/
