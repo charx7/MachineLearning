@@ -24,7 +24,7 @@ def joinData(botData, genuineData):
     print('Lenght of the genuine Data is: ', totalRowsGenuine[0])
 
     totalRowsJoined = joinedDataframe.shape
-    print('Lenght of the genuine Data is: ', totalRowsJoined[0])
+    print('Lenght of the Final Data is: ', totalRowsJoined[0])
 
     counts = joinedDataframe['bot'].value_counts()
     print('The number of tweets is: \n 1 for Bot \n 0 for Human. \n', counts)
@@ -33,6 +33,8 @@ def joinData(botData, genuineData):
     del botData
     del genuineData
 
+    # Re index to avoid duplicates
+    joinedDataframe = joinedDataframe.reset_index(drop=True)
     print('##############')
     print('End Join')
     print('##############')

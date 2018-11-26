@@ -6,13 +6,19 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
+from tqdm import tqdm
+import sys
+
+# User defined Imports ugly python import syntax >:(
+sys.path.append('../Preprocess')
+from dataJoin import joinData
 
 # custom analyzer to use in CountVectorizer
 class CustomAnalyzer(object):
     def __init__(self):
         self.tknzr_ = TweetTokenizer(strip_handles=True, reduce_len=True)
         self.stemmer_ = SnowballStemmer("english")
-        
+
     def __call__(self,tweet):
         tokenized_tweet = []
         # clean text from links, references, emojis etc.
@@ -28,12 +34,16 @@ class CustomAnalyzer(object):
         # stemming tokens
         for i in range(len(tokenized_tweet)): # stems names!!
             tokenized_tweet[i] = self.stemmer_.stem(tokenized_tweet[i])
-        return tokenized_tweetnized_tweets
+        return tokenized_tweet
 
 # read csv and take only the text
-data = pd.read_csv("tweets.csv")
+dfBot = pd.read_csv("../data/tweetsBots.csv")
+dfGen = pd.read_csv("../data/tweetsGenuine.csv")
+# Join Data
+data = joinData(dfBot, dfGen)
+
 print("Read {0:d} tweets".format(len(data)))
-raw_tweets = data["text"][:100]
+raw_tweets = data["text"][:]
 # initialize custom analyzer
 my_analyzer = CustomAnalyzer()
 # Bag of Words
@@ -46,10 +56,8 @@ word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
 feature_freq_dict = {}
 testsum = 0
 print("Printing tokens with frequency >= {0}".format(0.01))
-for i in range(len(feature_names)):
+for i in tqdm(range(len(feature_names))):
     feature_freq_dict[feature_names[i]] = word_freq[i]
     testsum = testsum + word_freq[i]
     if word_freq[i] >= 0.01:
         print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
-
-
