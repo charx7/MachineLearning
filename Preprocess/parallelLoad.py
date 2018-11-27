@@ -15,7 +15,7 @@ def read_csv(filename):
 def parallelLoad(filesRoute):
     #data = pd.read_csv('../data/tweetsBotsChunks/tweetsBots_chunk3.csv')
     # Set up the pool
-    pool = Pool(processes=8)
+    pool = Pool(processes=4)
 
     # get a list of file names
     files = os.listdir(filesRoute)
