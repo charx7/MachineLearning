@@ -15,7 +15,7 @@ botData = pd.read_csv("../data/tweetsBots.csv")
 genuineData = pd.read_csv("../data/tweetsGenuine.csv")
 
 print('Joining data...')
-df = joinData(botData.head(1000), genuineData.head(1000))
+df = joinData(botData, genuineData)
 
 # Drop all columns but the one containing the tweets text
 df = df[['text','bot']]
@@ -42,6 +42,9 @@ print('Stemming Words...')
 stemmer = PorterStemmer()
 # Steam the words
 df['stemmed_tweets'] = df['tokenized_text'].progress_apply(lambda words:[stemmer.stem(word) for word in words])
+
+# Remove the urls/# etc
+df['stemmed_tweets'] = df['stemmed_tweets'].progress_apply(lambda words:[ re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", "", word) for word in words])
 
 # Set-up remove of stop words
 stop_words = set(stopwords.words('english'))
@@ -71,7 +74,9 @@ for word in tqdm(flattenedStemmedWords):
             "(",
             ":",
             "!",
-            "..."
+            "...",
+            "http",
+            "u2013"
         ] and len(word) > 2 and word not in stop_words:
             cleanedStemmedWords.append(word.lower())
 print('The cleaned Stemmed Words are: \n',cleanedStemmedWords[:30])
