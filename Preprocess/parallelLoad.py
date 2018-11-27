@@ -27,7 +27,8 @@ def parallelLoad(filesRoute):
     df_list = pool.map(read_csv, file_list)
     # Combine the DF
     combined_df = pd.concat(df_list, ignore_index=True)
-
+    # Close the pool of created processes to we clean up resources
+    pool.close()
     return combined_df
 
 # Run the main process
