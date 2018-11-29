@@ -5,7 +5,6 @@ from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.feature_extraction.text import CountVectorizer
-from typing import List
 from tqdm import tqdm
 import sys
 
@@ -28,12 +27,9 @@ class CustomAnalyzer(object):
         # tokenize
         tokenized_tweet = self.tknzr_.tokenize(clean_tweet)
         # stopword removal
-        for word in tokenized_tweet:
-            if word in stopwords.words('english'):
-                tokenized_tweet.remove(word)
+        tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
         # stemming tokens
-        for i in range(len(tokenized_tweet)): # stems names!!
-            tokenized_tweet[i] = self.stemmer_.stem(tokenized_tweet[i])
+        tokenized_tweet = [self.stemmer_.stem(token) for token in tokenized_tweet]
         return tokenized_tweet
 
 # read csv and take only the text
