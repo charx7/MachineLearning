@@ -7,10 +7,46 @@ from nltk.stem.snowball import SnowballStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
 import sys
+from collections import OrderedDict
 
 # User defined Imports ugly python import syntax >:(
 sys.path.append('../Preprocess')
 from dataJoin import joinData
+
+def orderDict(dictToOrder):
+    # To order a dictionary
+    d_sorted_by_value = OrderedDict(sorted(dictToOrder.items(), key=lambda x: x[1]))
+    return d_sorted_by_value
+
+# Function that does the frequency analysis
+def doFreq(raw_tweets):
+    my_analyzer = CustomAnalyzer()
+    # Bag of Words
+    vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    bow = vctrz.fit_transform(raw_tweets)
+    # get feature names and calculate word frequencies
+    feature_names = vctrz.get_feature_names()
+    word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
+
+    # Construct a dictionary that will be the return of the function
+    feature_freq_dict = {}
+    for i in tqdm(range(len(feature_names))):
+        # Inserta a k,v pair with key = word and value the freq
+        feature_freq_dict[feature_names[i]] = word_freq[i]
+
+    # Call the order dict method
+    ordered_feature_freq_dict = orderDict(feature_freq_dict)
+
+    return ordered_feature_freq_dict
+    # REMOVE????
+    # feature_freq_dict = {}
+    # testsum = 0
+    # print("Printing tokens with frequency >= {0}".format(0.01))
+    # for i in tqdm(range(len(feature_names))):
+    #     feature_freq_dict[feature_names[i]] = word_freq[i]
+    #     testsum = testsum + word_freq[i]
+    #     if word_freq[i] >= 0.001:
+    #         print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
 
 # custom analyzer to use in CountVectorizer
 class CustomAnalyzer(object):
@@ -32,28 +68,29 @@ class CustomAnalyzer(object):
         tokenized_tweet = [self.stemmer_.stem(token) for token in tokenized_tweet]
         return tokenized_tweet
 
-# read csv and take only the text
-dfBot = pd.read_csv("../data/tweetsBots.csv")
-dfGen = pd.read_csv("../data/tweetsGenuine.csv")
-# Join Data
-data = joinData(dfBot, dfGen)
+if __name__ == '__main__':
+    # read csv and take only the text
+    dfBot = pd.read_csv("../data/tweetsBots.csv")
+    dfGen = pd.read_csv("../data/tweetsGenuine.csv")
+    # Join Data
+    data = joinData(dfBot, dfGen)
 
-print("Read {0:d} tweets".format(len(data)))
-raw_tweets = data["text"][:]
-# initialize custom analyzer
-my_analyzer = CustomAnalyzer()
-# Bag of Words
-vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
-bow = vctrz.fit_transform(raw_tweets)
-# get feature namesand calculate word frequencies
-feature_names = vctrz.get_feature_names()
-word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
+    print("Read {0:d} tweets".format(len(data)))
+    raw_tweets = data["text"][:]
+    # initialize custom analyzer
+    my_analyzer = CustomAnalyzer()
+    # Bag of Words
+    vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    bow = vctrz.fit_transform(raw_tweets)
+    # get feature names and calculate word frequencies
+    feature_names = vctrz.get_feature_names()
+    word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
 
-feature_freq_dict = {}
-testsum = 0
-print("Printing tokens with frequency >= {0}".format(0.01))
-for i in tqdm(range(len(feature_names))):
-    feature_freq_dict[feature_names[i]] = word_freq[i]
-    testsum = testsum + word_freq[i]
-    if word_freq[i] >= 0.01:
-        print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
+    feature_freq_dict = {}
+    testsum = 0
+    print("Printing tokens with frequency >= {0}".format(0.01))
+    for i in tqdm(range(len(feature_names))):
+        feature_freq_dict[feature_names[i]] = word_freq[i]
+        testsum = testsum + word_freq[i]
+        if word_freq[i] >= 0.01:
+            print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
