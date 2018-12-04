@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
 import sys
 from collections import OrderedDict
+import time
 
 # User defined Imports ugly python import syntax >:(
 sys.path.append('../Preprocess')
@@ -38,15 +39,6 @@ def doFreq(raw_tweets):
     ordered_feature_freq_dict = orderDict(feature_freq_dict)
 
     return ordered_feature_freq_dict
-    # REMOVE????
-    # feature_freq_dict = {}
-    # testsum = 0
-    # print("Printing tokens with frequency >= {0}".format(0.01))
-    # for i in tqdm(range(len(feature_names))):
-    #     feature_freq_dict[feature_names[i]] = word_freq[i]
-    #     testsum = testsum + word_freq[i]
-    #     if word_freq[i] >= 0.001:
-    #         print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
 
 # custom analyzer to use in CountVectorizer
 class CustomAnalyzer(object):
@@ -57,7 +49,7 @@ class CustomAnalyzer(object):
     def __call__(self,tweet):
         tokenized_tweet = []
         # clean text from links, references, emojis etc.
-        clean_tweet = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", "", tweet)
+        clean_tweet = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", tweet)
         # lowercase for stopwrod removal to work properly
         clean_tweet = clean_tweet.lower()
         # tokenize
@@ -69,28 +61,20 @@ class CustomAnalyzer(object):
         return tokenized_tweet
 
 if __name__ == '__main__':
+    start_time = time.time()
     # read csv and take only the text
-    dfBot = pd.read_csv("../data/tweetsBots.csv")
-    dfGen = pd.read_csv("../data/tweetsGenuine.csv")
+    #dfBot = pd.read_csv("../data/tweetsBots.csv")
+    #dfGen = pd.read_csv("../data/tweetsGenuine.csv")
     # Join Data
-    data = joinData(dfBot, dfGen)
-
+    #data = joinData(dfBot, dfGen)
+    data = pd.read_csv("../data/traditionalSpamBotsChunks1/tweets.csv")
     print("Read {0:d} tweets".format(len(data)))
-    raw_tweets = data["text"][:]
-    # initialize custom analyzer
-    my_analyzer = CustomAnalyzer()
-    # Bag of Words
-    vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
-    bow = vctrz.fit_transform(raw_tweets)
-    # get feature names and calculate word frequencies
-    feature_names = vctrz.get_feature_names()
-    word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
-
-    feature_freq_dict = {}
-    testsum = 0
-    print("Printing tokens with frequency >= {0}".format(0.01))
-    for i in tqdm(range(len(feature_names))):
-        feature_freq_dict[feature_names[i]] = word_freq[i]
-        testsum = testsum + word_freq[i]
-        if word_freq[i] >= 0.01:
-            print("{0} , {1:3.2f}".format(feature_names[i], word_freq[i]))
+    raw_tweets = data["text"].sample(frac=0.2)
+    print("Will process {0:d} tweets".format(len(raw_tweets)))
+    freq_dict = doFreq(raw_tweets)
+    i=1
+    for key, value in freq_dict.items():
+        if i>len(freq_dict)-20:
+            print("({0}, {1:10.9f})".format(key,value))
+        i = i+1
+    print("--- %s seconds ---" % (time.time() - start_time))
