@@ -4,7 +4,7 @@ import numpy as np
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
 from tqdm import tqdm
 import sys
 from collections import OrderedDict
@@ -38,7 +38,34 @@ def doFreq(raw_tweets):
     # Call the order dict method
     ordered_feature_freq_dict = orderDict(feature_freq_dict)
 
-    return ordered_feature_freq_dict
+    # Print Vocab size
+    print('vocabulary size of tf: {}'.format(len(vctrz.vocabulary_)))
+    # Return the orderred dict and the BoW
+    return ordered_feature_freq_dict, bow, feature_names
+
+def doTf_IDF(raw_tweets):
+    my_analyzer = CustomAnalyzer()
+    # Bag of Words
+    vctrz = TfidfVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    bow = vctrz.fit_transform(raw_tweets)
+    # get feature names and calculate word frequencies
+    feature_names = vctrz.get_feature_names()
+    # Get the IDF
+    idf = vctrz.idf_
+    word_freq = np.true_divide(np.ravel(bow.sum(axis=0)),bow.sum())
+
+    tf_idf_dict = dict(zip(vctrz.get_feature_names(), idf))
+
+    # Call the order dict method
+    ordered_tf_idf_dict = orderDict(tf_idf_dict)
+
+    # Print Vocab size
+    print('vocabulary size of tf-idf: {}'.format(len(vctrz.vocabulary_)))
+    # Return the orderred dict and the BoW
+    return ordered_tf_idf_dict, bow, feature_names, idf
+
+    # Returns
+    return ordered_tf_idf_dict, bow, feature_names, idf
 
 # custom analyzer to use in CountVectorizer
 class CustomAnalyzer(object):
