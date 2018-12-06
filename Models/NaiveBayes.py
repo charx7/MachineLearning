@@ -16,6 +16,30 @@ from dataJoin import joinData
 from parallelLoad import parallelLoad
 from preprocess import CustomAnalyzer, doFreq, doTf_IDF
 
+def tf_Idf_analysis(df, type):
+    print('Im doing tf-idf yeah! f*yeah!!!')
+    print('-----Start Tf/TfIdf for the {0} Data ------\n'.format(type))
+    # See how many tweets we read
+    print("Read {0:d} tweets".format(len(df)))
+    raw_tweets = df["text"][:]
+
+    # Do BoW for freq extraction
+    ordered_feature_freq_dict, bow_tf, feature_names_tf = doFreq(raw_tweets)
+
+    # Call the tf-idf method
+    ordered_idf_dict, bow_tf_idf, feature_names_tf_idf, idf = doTf_IDF(raw_tweets)
+
+    # Get the 10 largest values of the freq dict
+    print('\nFor Tf...')
+    printHighestFreq(10, ordered_feature_freq_dict)
+    # Print the most common tf
+    print('\nFor Idf...')
+    printHighestFreq(10, ordered_idf_dict)
+
+    print('-----End Tf/Idf for the full Data ------\n')
+
+    return ordered_feature_freq_dict, bow_tf, feature_names_tf, ordered_idf_dict, bow_tf_idf, feature_names_tf_idf, idf
+
 def printHighestFreq(N, ordered_data):
     # Print stuff
     print('The largest ', N ,' word freq for the dataset are: ')
@@ -40,63 +64,12 @@ if __name__ =='__main__':
     print('Joining data...')
     df = joinData(botData.head(1000), genuineData.head(1000))
 
-    print('-----Start Tf/TfIdf for the full Data ------\n')
-    # See how many tweets we read
-    print("Read {0:d} tweets".format(len(df)))
-    raw_tweets = df["text"][:]
-
-    # Do BoW for freq extraction
-    ordered_feature_freq_dict_full, bow_full, feature_names_full = doFreq(raw_tweets)
-
-    # Call the tf-idf method
-    ordered_idf_dict_full, bow_tf_idf_full, feature_names_tf_idf_full, idf_full = doTf_IDF(raw_tweets)
-
-    # Get the 10 largest values of the freq dict
-    print('\nFor Tf...')
-    printHighestFreq(10, ordered_feature_freq_dict_full)
-    # Print the most common tf
-    print('\nFor Idf...')
-    printHighestFreq(10, ordered_idf_dict_full)
-
-    print('-----End Tf/Idf for the full Data ------\n')
-
-    print('-----Start Tf/Idf for the bot Data ------\n')
-    # Compute the bot data frequeies for comparsion
-    # See how many tweets does the bot data contain
-    print("Read {0:d} tweets of bot data".format(len(botData)))
-    raw_bot_tweets = botData.head(1000)["text"][:]
-
-    # Do BoW for freq extraction on bot data
-    ordered_feature_freq_dict_bot, bow_bot, feature_names_bot = doFreq(raw_bot_tweets)
-
-    # Call the tf-idf method
-    ordered_idf_dict_bot, bow_tf_idf_bot, feature_names_tf_idf_bot, idf_bot = doTf_IDF(raw_bot_tweets)
-
-    # Print the 10 largest ordered data
-    print('\nFor Tf...')
-    printHighestFreq(10, ordered_feature_freq_dict_bot)
-    print('\nFor Idf...')
-    printHighestFreq(10, ordered_idf_dict_bot)
-    print('-----End Tf/TfIdf for the bot Data ------\n')
-
-    print('-----Start Tf/Idf for the Genuine Data ------\n')
-    # Compute the bot data frequeies for comparsion
-    # See how many tweets does the bot data contain
-    print("Read {0:d} tweets of genuine data".format(len(genuineData)))
-    raw_genuine_tweets = genuineData.head(1000)["text"][:]
-
-    # Do BoW for freq extraction on bot data
-    ordered_feature_freq_dict_genuine, bow_genuine, feature_names_genuine = doFreq(raw_genuine_tweets)
-
-    # Call the tf-idf method
-    ordered_idf_dict_genuine, bow_tf_idf_genuine, feature_names_tf_idf_genuine, idf_genuine = doTf_IDF(raw_genuine_tweets)
-
-    # Print the 10 largest ordered data
-    print('\nFor Tf...')
-    printHighestFreq(10, ordered_feature_freq_dict_genuine)
-    print('\nFor Idf...')
-    printHighestFreq(10, ordered_idf_dict_genuine)
-    print('-----End Tf/TfIdf for the Genuine Data ------\n')
+    # Tf-Idf on the full dataset
+    ordered_feature_freq_dict_full, bow_tf_full, feature_names_tf_full, ordered_idf_dict_full, bow_tf_idf_full, feature_names_tf_idf_full, idf_full = tf_Idf_analysis(df, 'full')
+    # Tf-Idf on the bot data
+    ordered_feature_freq_dict_bot, bow_tf_bot, feature_names_tf_bot, ordered_idf_dict_bot, bow_tf_idf_bot, feature_names_tf_idf_bot, idf_bot = tf_Idf_analysis(botData.head(2000), 'bot')
+    # Tf-Idf on the genuine/human data
+    ordered_feature_freq_dict_genuine, bow_tf_genuine, feature_names_tf_genuine, ordered_idf_dict_genuine, bow_tf_idf_genuine, feature_names_tf_idf_genuine, idf_genuine = tf_Idf_analysis(genuineData.head(2000), 'genuine')
 
     # Start the train/test split
     raw_tweets = df['text'][:]
