@@ -79,6 +79,25 @@ if __name__ =='__main__':
     printHighestFreq(10, ordered_idf_dict_bot)
     print('-----End Tf/TfIdf for the bot Data ------\n')
 
+    print('-----Start Tf/Idf for the Genuine Data ------\n')
+    # Compute the bot data frequeies for comparsion
+    # See how many tweets does the bot data contain
+    print("Read {0:d} tweets of genuine data".format(len(genuineData)))
+    raw_genuine_tweets = genuineData.head(1000)["text"][:]
+
+    # Do BoW for freq extraction on bot data
+    ordered_feature_freq_dict_genuine, bow_genuine, feature_names_genuine = doFreq(raw_genuine_tweets)
+
+    # Call the tf-idf method
+    ordered_idf_dict_genuine, bow_tf_idf_genuine, feature_names_tf_idf_genuine, idf_genuine = doTf_IDF(raw_genuine_tweets)
+
+    # Print the 10 largest ordered data
+    print('\nFor Tf...')
+    printHighestFreq(10, ordered_feature_freq_dict_genuine)
+    print('\nFor Idf...')
+    printHighestFreq(10, ordered_idf_dict_genuine)
+    print('-----End Tf/TfIdf for the Genuine Data ------\n')
+
     # Start the train/test split
     raw_tweets = df['text'][:]
 
@@ -116,40 +135,57 @@ if __name__ =='__main__':
     sum_tf_idf_bot = 0
     sum_tf_idf_genuine = 0
     # Sum over all the words for the the TF-IDF
-    for word in ordered_feature_freq_dict_full:
-        tfidf = ordered_feature_freq_dict_full[word] * ordered_idf_dict_full[word]
+    for word in ordered_feature_freq_dict_genuine:
+        tfidf = ordered_feature_freq_dict_genuine[word] * ordered_idf_dict_genuine[word]
         sum_tf_idf_genuine += tfidf
 
-    for word in ordered_idf_dict_full:
-        # Check if the word exists on the bot vocabulary
-        if word in ordered_idf_dict_bot and word in ordered_feature_freq_dict_bot:
-            # If it exists then get its tf
-            multiplicationCoef1 = ordered_idf_dict_bot[word]
-            multiplicationCoef2 = ordered_feature_freq_dict_bot[word]
-        else:
-            multiplicationCoef1 = 0
-            multiplicationCoef2 = 0
-
-        tfidf = multiplicationCoef1 * multiplicationCoef2
+    for word in ordered_feature_freq_dict_bot:
+        tfidf = ordered_feature_freq_dict_bot[word] * ordered_idf_dict_bot[word]
         sum_tf_idf_bot += tfidf
 
     # The test tweet we are gonna use to test our classify XD
-    currentTweet = X_train.iloc[0]
+    currentTweet = X_train.iloc[5]
     print(currentTweet)
     # declare stemmer
     stemmer = SnowballStemmer("english")
 
+    # Initialize probs
+    probNotSpamGivenWords = 1
+    probSpamGivenWords = 1
     for word in currentTweet.split():
         # To lower case
         word = word.lower()
         # Stem
         word = stemmer.stem(word)
         print(word)
-        # Probability of just the word
-        if word in ordered_feature_freq_dict_full and word in ordered_idf_dict_full:
-            nomin = ordered_feature_freq_dict_full[word] * ordered_idf_dict_full[word]
-            result = nomin / sum_tf_idf_genuine
-            print('The probability for the word %s is: %f' %(word, result))
+        # Probability of Spam
+        if word in ordered_feature_freq_dict_bot and word in ordered_idf_dict_bot:
+            nomin = ordered_feature_freq_dict_bot[word] * ordered_idf_dict_bot[word]
+            result = nomin / sum_tf_idf_bot
+            print('The probability for the word given bot %s is: %f' %(word, result))
             print(result)
+            probSpamGivenWords = probSpamGivenWords * result
         else:
-            result = 1
+                result = 1
+
+        # Probability of not spam
+        if word in ordered_feature_freq_dict_genuine and word in ordered_idf_dict_genuine:
+            nomin = ordered_feature_freq_dict_genuine[word] * ordered_idf_dict_genuine[word]
+            secondResult = nomin / sum_tf_idf_genuine
+            print('The probability for the word given not bot %s is: %f' %(word, result))
+            print(secondResult)
+            probNotSpamGivenWords = probNotSpamGivenWords * secondResult
+        else:
+            secondResult = 1
+
+    # Multiply times the prior of being spam pA
+    currentTweetBotProb = probSpamGivenWords * pA
+    currentTweetNotBotProb = probNotSpamGivenWords * pNotA
+    print('The prob of the current tweet being from a bot is: ', currentTweetBotProb)
+    print('The prob of the current tweet not being from a bot is: ', currentTweetNotBotProb)
+
+    if (currentTweetBotProb > currentTweetNotBotProb):
+        print('The current tweet is from a Bot')
+    else:
+        print('The current tweet is from a human')
+    print('the correct label is: ', y_train.iloc[5])
