@@ -6,6 +6,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+from nltk.tokenize import TweetTokenizer
 from tqdm import tqdm
 from heapq import nlargest
 
@@ -89,59 +90,81 @@ def calculatePosteriorProbs():
 def classify(messageToClassify):
     # The test tweet we are gonna use to test our classify XD
     print('\n We are going to classify: \n', messageToClassify)
+
     # Declare stemmer
     stemmer = SnowballStemmer("english")
     # Initialize probs
-    probNotSpamGivenWords = 1
-    probSpamGivenWords = 1
-    for word in messageToClassify.split():
-        # To lower case
-        word = word.lower()
-        # Stem the current word in the tweet
-        word = stemmer.stem(word)
-        # Probability of Spam
+    probNotBotGivenWords = 1
+    probBotGivenWords = 1
+    # Clean and tokenize
+    tknzr_ = TweetTokenizer(strip_handles=True, reduce_len=True)
+    stemmer_ = SnowballStemmer("english")
+    tokenized_tweet = []
+    # clean text from links, references, emojis etc.
+    clean_tweet = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", messageToClassify)
+    # lowercase for stopwrod removal to work properly
+    clean_tweet = clean_tweet.lower()
+    # tokenize
+    tokenized_tweet = tknzr_.tokenize(clean_tweet)
+    # stopword removal
+    tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
+    # stemming tokens
+    tokenized_tweet = [stemmer_.stem(token) for token in tokenized_tweet]
+
+    print(tokenized_tweet)
+    # Calculations of the P(word given bot) and P(word given not bot)
+    for word in tokenized_tweet:
+        # Probability of bot
         if word in ordered_feature_freq_dict_bot and word in ordered_idf_dict_bot:
             nomin = ordered_feature_freq_dict_bot[word] * ordered_idf_dict_bot[word]
-            result = nomin / sum_tf_idf_bot
+            result = nomin #/ sum_tf_idf_bot
             #print('The probability for the word given bot %s is: %f' %(word, result))
             #print(result)
-            probSpamGivenWords = probSpamGivenWords * result
+            probBotGivenWords = probBotGivenWords * result
         else:
-            result = 1
+            probBotGivenWords = probBotGivenWords
 
-        # Probability of not spam
+        # Probability of not bot
         if word in ordered_feature_freq_dict_genuine and word in ordered_idf_dict_genuine:
             nomin = ordered_feature_freq_dict_genuine[word] * ordered_idf_dict_genuine[word]
-            secondResult = nomin / sum_tf_idf_genuine
+            secondResult = nomin #/ sum_tf_idf_genuine
             #print('The probability for the word given not bot %s is: %f' %(word, result))
             #print(secondResult)
-            probNotSpamGivenWords = probNotSpamGivenWords * secondResult
+            probNotBotGivenWords = probNotBotGivenWords * secondResult
         else:
-            secondResult = 1
+            probNotBotGivenWords = probNotBotGivenWords
 
     # Multiply times the prior of being spam pA
-    currentTweetBotProb = probSpamGivenWords * pA
-    currentTweetNotBotProb = probNotSpamGivenWords * pNotA
+    currentTweetBotProb = probBotGivenWords * pA
+    currentTweetNotBotProb = probNotBotGivenWords * pNotA
     print('The prob of the current tweet being from a bot is: ', currentTweetBotProb)
     print('The prob of the current tweet not being from a bot is: ', currentTweetNotBotProb)
 
     return currentTweetBotProb, currentTweetNotBotProb
 
 def evaluateTweet(currentTweetBotProb, currentTweetNotBotProb, y_index):
+    bot = False
+    result = 0
     # Check which one of the probabilities is higher
-    if (currentTweetBotProb > currentTweetNotBotProb):
+    if (currentTweetBotProb < currentTweetNotBotProb):
         print('The current tweet is from a Bot')
+        bot = True
     else:
         print('The current tweet is from a Human')
+        bot = False
     # Print the correct label to the console
     if y_train.iloc[y_index] == 0:
         print('The correct label is Human')
+        if bot == False:
+            result += 1
     else:
         print('The correct label is Bot')
+        if bot == True:
+            result += 1
+
+    return result
 
 if __name__ =='__main__':
-    # To measure the progress of our lambda apply functions
-    tqdm.pandas()
     print('Loading data...')
 
     # Start Data loading using paralelization parallelLoad(route_to_files) function!
@@ -153,7 +176,7 @@ if __name__ =='__main__':
     print('Joining data...')
     df = joinData(botData.head(1000), genuineData.head(1000))
 
-    DO_ANALYSIS_ON_FULL = True
+    DO_ANALYSIS_ON_FULL = False
     if DO_ANALYSIS_ON_FULL == True:
         # Tf-Idf on the full dataset
         ordered_feature_freq_dict_full, bow_tf_full, feature_names_tf_full, ordered_idf_dict_full, bow_tf_idf_full, feature_names_tf_idf_full, idf_full = tf_Idf_analysis(df, 'full')
@@ -170,6 +193,12 @@ if __name__ =='__main__':
 
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size= 0.2, random_state=42)
 
+    # God Damn Pandas Selection
+    trainingIndexes = X_train.index.values
+    indexedDf = df.iloc[trainingIndexes]
+    trainingBots = indexedDf.loc[indexedDf['bot'] == 1]
+    trainingGenuine = indexedDf.loc[indexedDf['bot'] == 0]
+
     print('The shapes of the train/test split are...\n Train shapes...')
     print(X_train.shape)
     print(y_train.shape)
@@ -177,16 +206,33 @@ if __name__ =='__main__':
     print(X_test.shape)
     print(y_test.shape)
 
+    print('Doing the tf-idf transforms on the training dataset...')
+    # The training TF-IDF feature extraction
+    DO_TRAINING = True
+    if DO_TRAINING == True:
+        # Tf-Idf on the full dataset
+        #ordered_feature_freq_dict_full, bow_tf_full, feature_names_tf_full, ordered_idf_dict_full, bow_tf_idf_full, feature_names_tf_idf_full, idf_full = tf_Idf_analysis(df, 'full')
+        # Tf-Idf on the bot data
+        ordered_feature_freq_dict_bot, bow_tf_bot, feature_names_tf_bot, ordered_idf_dict_bot, bow_tf_idf_bot, feature_names_tf_idf_bot, idf_bot = tf_Idf_analysis(trainingBots, 'bot')
+        # Tf-Idf on the genuine/human data
+        ordered_feature_freq_dict_genuine, bow_tf_genuine, feature_names_tf_genuine, ordered_idf_dict_genuine, bow_tf_idf_genuine, feature_names_tf_idf_genuine, idf_genuine = tf_Idf_analysis(trainingGenuine, 'genuine')
+
     # Prior probs calculations
     pA, pNotA = calculatePriorProbs(X_train, y_train)
     # Posterior probabilities calculation
     sum_tf_idf_genuine, sum_tf_idf_bot = calculatePosteriorProbs()
 
+    globalResult = 0
     # Now we start the model classification on the training set
-    for tweet in range(10):
+    for tweet in range(X_train.shape[0]):
         # Classification of our current tweet
         currentTweet = X_train.iloc[tweet]
         # Classify a tweet according to the calculated probs
         currentTweetBotProb, currentTweetNotBotProb = classify(currentTweet)
         # Do model evaluation
-        evaluateTweet(currentTweetBotProb, currentTweetNotBotProb, tweet)
+        result = evaluateTweet(currentTweetBotProb, currentTweetNotBotProb, tweet)
+
+        globalResult = globalResult + result
+
+    # Print Results
+    print('\nThe model got: ', globalResult,' out of ', X_train.shape[0] ,'correctly classified tweets on training data')
