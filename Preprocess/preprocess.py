@@ -41,7 +41,7 @@ def doFreq(raw_tweets):
     # Print Vocab size
     print('vocabulary size of tf: {}'.format(len(vctrz.vocabulary_)))
     # Return the orderred dict and the BoW
-    return ordered_feature_freq_dict, bow, feature_names
+    return ordered_feature_freq_dict, bow
 
 def doTf_IDF(raw_tweets):
     my_analyzer = CustomAnalyzer()
