@@ -83,6 +83,8 @@ class CustomAnalyzer(object):
         tokenized_tweet = self.tknzr_.tokenize(clean_tweet)
         # stopword removal
         tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
+        # remove words with <3 letters
+        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 3 ]
         # stemming tokens
         tokenized_tweet = [self.stemmer_.stem(token) for token in tokenized_tweet]
         return tokenized_tweet
@@ -94,11 +96,11 @@ if __name__ == '__main__':
     #dfGen = pd.read_csv("../data/tweetsGenuine.csv")
     # Join Data
     #data = joinData(dfBot, dfGen)
-    data = pd.read_csv("../data/traditionalSpamBotsChunks1/tweets.csv")
+    data = pd.read_csv("english_tweets.csv")
     print("Read {0:d} tweets".format(len(data)))
-    raw_tweets = data["text"].sample(frac=0.2)
+    raw_tweets = data["text"].sample(frac=0.1)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
-    freq_dict = doFreq(raw_tweets)
+    freq_dict, bow, feature_names = doFreq(raw_tweets)
     i=1
     for key, value in freq_dict.items():
         if i>len(freq_dict)-20:
