@@ -1,0 +1,79 @@
+import pandas as pd
+import nltk
+import math
+import multiprocessing as mp
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+
+from nltk.tokenize import word_tokenize
+from nltk.stem.porter import *
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+from nltk.tokenize import TweetTokenizer
+from tqdm import tqdm
+from heapq import nlargest
+
+import sys
+# User defined Imports ugly python import syntax >:(
+sys.path.append('../Preprocess')
+from dataJoin import joinData
+from parallelLoad import parallelLoad
+from preprocess import CustomAnalyzer, doFreq, doTf_IDF, transform_tf
+
+if __name__ == '__main__':
+    print('Yo yo yooo Im main weeee!')
+
+    print('Loading data...')
+    # Start Data loading using paralelization parallelLoad(route_to_files) function!
+    filesRoute = '../data/traditionalSpamBotsChunks1/'
+    botData = parallelLoad(filesRoute)
+    filesRoute = '../data/genuineTweetsChunks/'
+    genuineData = parallelLoad(filesRoute)
+
+    print('Joining data...')
+    df = joinData(botData.head(2000), genuineData.head(2000))
+
+    # Reset indexes after join
+    df = df.reset_index()
+    # Start the train/test split
+    raw_tweets = df['text'][:]
+
+    x = raw_tweets
+    y = df['bot'][:]
+
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size= 0.2, random_state=42)
+
+    # God Damn Pandas Selection
+    trainingIndexes = X_train.index.values
+    print('The lenght of the training indexes is: ', len(list(trainingIndexes)))
+    indexedDf = df.iloc[trainingIndexes]
+    trainingBots = indexedDf.loc[indexedDf['bot'] == 1]
+    trainingGenuine = indexedDf.loc[indexedDf['bot'] == 0]
+    trainingFull = indexedDf
+
+    # Do BoW for freq extraction
+    trainingFull = trainingFull["text"][:]
+    X_train_transformed, count_vect, tf_transformer = transform_tf(trainingFull)
+
+    # shape for debugz
+    print('The shape of the transf dataset is: ',X_train_transformed.shape)
+    print('The shape of the training data is: ', trainingFull.shape)
+    print('The shape of the X_train data is: ', X_train.shape)
+    print('The shape of the training labels is: ', y_train.shape)
+    print('The train labels form are: ',y_train.values)
+    # Naive Bayes classifier
+    naive_bayes_classifier = MultinomialNB().fit(X_train_transformed, y_train.values)
+
+    # Test output of the clasifier
+    docs_new = ['Get your free stuff', 'oh my god taylor mascaras on sale']
+
+    X_new_counts = count_vect.transform(docs_new)
+    X_new_tfidf = tf_transformer.transform(X_new_counts)
+
+    predicted = naive_bayes_classifier.predict(X_new_tfidf)
+
+    target_names = ['Human', 'Bot']
+
+    for doc, category in zip(docs_new, predicted):
+        print('%r => %s' % (doc, target_names[category]))

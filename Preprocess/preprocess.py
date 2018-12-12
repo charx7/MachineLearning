@@ -19,6 +19,20 @@ def orderDict(dictToOrder):
     d_sorted_by_value = OrderedDict(sorted(dictToOrder.items(), key=lambda x: x[1]))
     return d_sorted_by_value
 
+def transform_tf(raw_tweets):
+    # Create instance of the analyzer
+    my_analyzer = CustomAnalyzer()
+    # Get the counts
+    count_vect = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    # Get them counts
+    raw_tweets_counts = count_vect.fit_transform(raw_tweets)
+    # Create an object of TfidfTransformer
+    tf_transformer = TfidfTransformer(use_idf=False).fit(raw_tweets_counts)
+    # transform the word counts
+    raw_tweets_tf = tf_transformer.transform(raw_tweets_counts)
+
+    return raw_tweets_tf, count_vect, tf_transformer
+
 # Function that does the frequency analysis
 def doFreq(raw_tweets):
     my_analyzer = CustomAnalyzer()
@@ -62,9 +76,6 @@ def doTf_IDF(raw_tweets):
     # Print Vocab size
     print('vocabulary size of tf-idf: {}'.format(len(vctrz.vocabulary_)))
     # Return the orderred dict and the BoW
-    return ordered_tf_idf_dict, bow, feature_names, idf
-
-    # Returns
     return ordered_tf_idf_dict, bow, feature_names, idf
 
 # custom analyzer to use in CountVectorizer
