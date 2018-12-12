@@ -8,10 +8,18 @@ from nltk.stem.snowball import SnowballStemmer
 from multiprocessing import Pool
 
 def detect_language(text, wordlist):
+    # check NaN cases
+    if pd.isnull(text):
+        return False
     stmr = SnowballStemmer("english")
     tknzr = TweetTokenizer(strip_handles=True, reduce_len=True)
-    
-    clean_text = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", text)
+    try:
+        clean_text = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", text)
+    except:
+        print("===========================================")
+        print("ERROR ON REGEX WHILE PROCESSING TWEET TEXT: \n")
+        print(text)
+        print("===========================================")
     tokenized_text = tknzr.tokenize(clean_text.lower())
     t = [token for token in tokenized_text if stmr.stem(token) in wordlist]
     if len(tokenized_text)>0:
@@ -31,10 +39,10 @@ def filter_tweets(tweets):
 if __name__ == '__main__':
     start_time = time.time()
     # read chosen csv
-    data = pd.read_csv("../data/traditionalSpamBotsChunks1/tweets.csv")
+    data = pd.read_csv("../data/genuineTweetsChunks/tweets.csv")
     print("Read {0:d} tweets".format(len(data)))
     # define dataset
-    raw_tweets = data["text"]
+    raw_tweets = data["text"].sample(frac=0.05)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
     # split dataset to parts to paralellize language detection
     n = 100
@@ -44,9 +52,9 @@ if __name__ == '__main__':
     english_tweets = pool.map(filter_tweets, split_tweets)
     # flatten resulting list of lists to one list
     english_tweets = [item for sublist in english_tweets for item in sublist]
-    print("English tweets {0:d}".format(len(english_tweets)))
+    print("English tweets found after filtering: {0:d}".format(len(english_tweets)))
     print("Exporting results to csv file")
     df = pd.DataFrame(english_tweets, columns=['text'])
-    df.to_csv('english_tweets.csv')
+    df.to_csv('genuine_english_tweets.csv')
     print("--- %s seconds ---" % (time.time() - start_time))
     
