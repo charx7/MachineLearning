@@ -1,7 +1,7 @@
 import pandas as pd
 import math
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
 
 import sys
@@ -12,7 +12,8 @@ from parallelLoad import parallelLoad
 from preprocess import CustomAnalyzer, doFreq, doTf_IDF, transform_tf
 
 if __name__ == '__main__':
-    print('Yo yo yooo Im main weeee!')
+    # To difine which method
+    USE_MULTINOMIAL = False
 
     print('Loading data...')
     # Start Data loading using paralelization parallelLoad(route_to_files) function!
@@ -53,9 +54,13 @@ if __name__ == '__main__':
     # print('The shape of the X_train data is: ', X_train.shape)
     # print('The shape of the training labels is: ', y_train.shape)
     # print('The train labels form are: ',y_train.values)
-    # Naive Bayes classifier
 
-    naive_bayes_classifier = MultinomialNB().fit(X_train_transformed, y_train.values)
+    # Naive Bayes classifier Multinomial or Bernoilli (two classes)
+    if USE_MULTINOMIAL == True:
+        naive_bayes_classifier = MultinomialNB().fit(X_train_transformed, y_train.values)
+    else:
+        # With laplace smoothing of alpha = 1 acc goes up to 86% if not then 50%
+        naive_bayes_classifier = BernoulliNB(alpha=1.0).fit(X_train_transformed, y_train.values)
     # Score method of the nb classifier
     trainingAcc = naive_bayes_classifier.score(X_train_transformed, y_train.values)
     print('The accuracy of NB on our training data is: ', trainingAcc)
