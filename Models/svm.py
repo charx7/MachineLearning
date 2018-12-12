@@ -61,7 +61,8 @@ if __name__ == '__main__':
 
     # Grid Search (BruteForce) over the hyper params
     best_score = 0
-    best_params = {'C': None, 'gamma': None}
+    # Declare a dictionary that will store the best values
+    best_params = {'C': None, 'gamma': None, 'bestModel': None}
     print('------Init hyperparameter Optimization-----')
     # Timer
     start_time = time.time()
@@ -75,18 +76,15 @@ if __name__ == '__main__':
                 best_score = score
                 best_params['C'] = C
                 best_params['gamma'] = gamma
+                best_params['bestModel'] = svc
 
     # Score the final model on the test set separated at the beginning
     # Perform vector transformation on the validation set
     test_tweets = X_test.values
     test_tweets_counts = count_vect.transform(test_tweets)
     test_tweets_tfidf = tf_transformer.transform(test_tweets_counts)
-    # Construct a model with the 'best params'
-    svc = svm.SVC(C=best_params['C'], gamma=best_params['gamma'])
-    # Fit with the train data
-    svc.fit(X_train_transformed, y_train.values)
-    # Scorez
-    test_score = svc.score(test_tweets_tfidf, y_test.values)
+    # Retreive the best model from the best_params
+    test_score = best_params['bestModel'].score(test_tweets_tfidf, y_test.values)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print('\nThe best hyperparameters on the grid are: ', best_params)
