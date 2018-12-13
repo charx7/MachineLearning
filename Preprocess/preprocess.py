@@ -19,11 +19,14 @@ def orderDict(dictToOrder):
     d_sorted_by_value = OrderedDict(sorted(dictToOrder.items(), key=lambda x: x[1]))
     return d_sorted_by_value
 
-def transform_tf(raw_tweets):
+def transform_tf(raw_tweets, **kwargs):
     # Create instance of the analyzer
     my_analyzer = CustomAnalyzer()
     # Get the counts
-    count_vect = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    if 'vocabulary' in kwargs:
+        count_vect = CountVectorizer(vocabulary=kwargs['vocabulary'], analyzer=my_analyzer)
+    else:
+        count_vect = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
     # Get them counts
     raw_tweets_counts = count_vect.fit_transform(raw_tweets)
     # Create an object of TfidfTransformer
@@ -34,10 +37,13 @@ def transform_tf(raw_tweets):
     return raw_tweets_tf, count_vect, tf_transformer
 
 # Function that does the frequency analysis
-def doFreq(raw_tweets):
+def doFreq(raw_tweets, **kwargs):
     my_analyzer = CustomAnalyzer()
     # Bag of Words
-    vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    if 'vocabulary' in kwargs:
+        vctrz = CountVectorizer(vocabulary=kwargs['vocabulary'], analyzer=my_analyzer)
+    else:
+        vctrz = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
     bow = vctrz.fit_transform(raw_tweets)
     # get feature names and calculate word frequencies
     feature_names = vctrz.get_feature_names()
@@ -55,12 +61,15 @@ def doFreq(raw_tweets):
     # Print Vocab size
     print('vocabulary size of tf: {}'.format(len(vctrz.vocabulary_)))
     # Return the orderred dict and the BoW
-    return ordered_feature_freq_dict, bow
+    return ordered_feature_freq_dict, bow, feature_names
 
-def doTf_IDF(raw_tweets):
+def doTf_IDF(raw_tweets, **kwargs):
     my_analyzer = CustomAnalyzer()
     # Bag of Words
-    vctrz = TfidfVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+    if 'vocabulary' in kwargs:
+        vctrz = TfidfVectorizer(vocabulary=kwargs['vocabulary'], analyzer=my_analyzer)
+    else:
+        vctrz = TfidfVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
     bow = vctrz.fit_transform(raw_tweets)
     # get feature names and calculate word frequencies
     feature_names = vctrz.get_feature_names()
@@ -94,8 +103,8 @@ class CustomAnalyzer(object):
         tokenized_tweet = self.tknzr_.tokenize(clean_tweet)
         # stopword removal
         tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
-        # remove words with <3 letters
-        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 3 ]
+        # remove words with < 4 letters
+        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 4 ]
         # stemming tokens
         tokenized_tweet = [self.stemmer_.stem(token) for token in tokenized_tweet]
         return tokenized_tweet
@@ -107,7 +116,7 @@ if __name__ == '__main__':
     #dfGen = pd.read_csv("../data/tweetsGenuine.csv")
     # Join Data
     #data = joinData(dfBot, dfGen)
-    data = pd.read_csv("english_tweets.csv")
+    data = pd.read_csv("../data/genuineTweetsChunks/tweets_chunk1.csv")
     print("Read {0:d} tweets".format(len(data)))
     raw_tweets = data["text"].sample(frac=0.1)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
