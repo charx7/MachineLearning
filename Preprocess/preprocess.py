@@ -19,6 +19,14 @@ def orderDict(dictToOrder):
     d_sorted_by_value = OrderedDict(sorted(dictToOrder.items(), key=lambda x: x[1]))
     return d_sorted_by_value
 
+# Function to clean tweet using regex and convert it to lowercase
+def cleanString(text):
+    # clean text from links, references, emojis etc.
+    text = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", text)
+    # lowercase for stopwrod removal to work properly
+    text = text.lower()
+    return text
+
 def transform_tf(raw_tweets, **kwargs):
     # Create instance of the analyzer
     my_analyzer = CustomAnalyzer()
@@ -95,10 +103,8 @@ class CustomAnalyzer(object):
 
     def __call__(self,tweet):
         tokenized_tweet = []
-        # clean text from links, references, emojis etc.
-        clean_tweet = re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((\d+\s)+)|(\d+$)|(RT)|(rt)", "", tweet)
-        # lowercase for stopwrod removal to work properly
-        clean_tweet = clean_tweet.lower()
+        # clean text from links, references, emojis etc. and convert it to lowercase
+        clean_tweet = cleanString(tweet)
         # tokenize
         tokenized_tweet = self.tknzr_.tokenize(clean_tweet)
         # stopword removal
@@ -112,8 +118,8 @@ class CustomAnalyzer(object):
 if __name__ == '__main__':
     start_time = time.time()
     # read csv and take only the text
-    #dfBot = pd.read_csv("../data/tweetsBots.csv")
-    #dfGen = pd.read_csv("../data/tweetsGenuine.csv")
+    #dfBot = pd.read_csv("../data/preprocessedTweets/bot_english_tweets.csv")
+    #dfGen = pd.read_csv("../data/preprocessedTweets/genuine_english_tweets.csv")
     # Join Data
     #data = joinData(dfBot, dfGen)
     data = pd.read_csv("../data/genuineTweetsChunks/tweets_chunk1.csv")
