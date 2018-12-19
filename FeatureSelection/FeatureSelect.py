@@ -89,17 +89,35 @@ from sklearn.linear_model import LogisticRegression
 # create a base classifier used to evaluate a subset of attributes
 model = LogisticRegression()
 # create the RFE model and select 3 attributes
-rfe = RFE(model, 3)
+rfe = RFE(model, 10)
 rfe = rfe.fit(df, dataOrigin.bot)
 # summarize the selection of the attributes
 print(rfe.support_)
 print(rfe.ranking_)
 
+cols = ['place_nan','num_hashtags_2.0','num_hashtags_3.0','num_hashtags_4.0',
+        'num_urls_0.0','num_mentions_1.0','num_mentions_2.0','num_mentions_3.0',
+        'favorite_count_favorite_count0_20']
+X = df[cols]
+y = dataOrigin['bot']
 
+############################Implementing the model############################
+import statsmodels.api as sm
+logit_model = sm.Logit(y, X)
+result = logit_model.fit()
+print(result.summary())
 
+############################Logistic Regression Model Fitting############################
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+from sklearn.model_selection import train_test_split
 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
 
-
+y_pred = logreg.predict(X_test)
+print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(logreg.score(X_test, y_test)))
 
 
 
