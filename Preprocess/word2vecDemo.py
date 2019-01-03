@@ -79,16 +79,16 @@ if __name__ == '__main__':
     Y_train = np.asarray(Y)
 
     # making placeholders for X_train and Y_train
-    x = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM))
+    x = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM), name = 'one_hot_input')
     y_label = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM))
 
     # word embedding will be 2 dimension for 2d visualization
     EMBEDDING_DIM = 2
 
     # hidden layer: which represents word vector eventually
-    W1 = tf.Variable(tf.random_normal([ONE_HOT_DIM, EMBEDDING_DIM]))
-    b1 = tf.Variable(tf.random_normal([1])) #bias
-    hidden_layer = tf.add(tf.matmul(x,W1), b1)
+    W1 = tf.Variable(tf.random_normal([ONE_HOT_DIM, EMBEDDING_DIM]), name = 'W1')
+    b1 = tf.Variable(tf.random_normal([1]), name = 'b1') #bias
+    hidden_layer = tf.add(tf.matmul(x,W1), b1, name = 'w2v')
 
     # output layer
     W2 = tf.Variable(tf.random_normal([EMBEDDING_DIM, ONE_HOT_DIM]))
@@ -101,6 +101,9 @@ if __name__ == '__main__':
     # training operation
     train_op = tf.train.GradientDescentOptimizer(0.05).minimize(loss)
 
+    # Add ops to save and restore variables
+    saver = tf.train.Saver()
+    
     # Start the training
     sess = tf.Session()
     init = tf.global_variables_initializer()
@@ -113,7 +116,8 @@ if __name__ == '__main__':
         sess.run(train_op, feed_dict={x: X_train, y_label: Y_train})
         if i % 3000 == 0:
             print('iteration '+str(i)+' loss is : ', sess.run(loss, feed_dict={x: X_train, y_label: Y_train}))
-
+    save_path = saver.save(sess, "w2v\\word_emb")
+    print("Model saved in path: %s" % save_path)
     # Now the hidden layer (W1 + b1) is actually the word look up table
     vectors = sess.run(W1 + b1)
     print(vectors)
@@ -121,4 +125,4 @@ if __name__ == '__main__':
     w2v_df = pd.DataFrame(vectors, columns = ['x1', 'x2'])
     w2v_df['word'] = words
     w2v_df = w2v_df[['word', 'x1', 'x2']]
-    print('The output vector model is: ',w2v_df)
+    print('The output vector model is: \n',w2v_df)
