@@ -3,15 +3,15 @@ import numpy as np
 import tensorflow as tf
 
 # form test data
-test_one_hot_word = np.zeros((1,12), np.float32)
-test_one_hot_word[0,0] = 1.0
-print("One-hot array of test word (corresponds to 'girl'): \n {}".format(test_one_hot_word))
+test_one_hot_word = np.zeros((1,13))
+test_one_hot_word[0,1] = 1.0
+print("One-hot array of test word (corresponds to 'king'): \n {}".format(test_one_hot_word))
 # restore and test model
-saver = tf.train.import_meta_graph("w2v\\word_emb.meta")
+saver = tf.train.import_meta_graph("tf_saved_models\\word_emb.meta")
 restored_graph = tf.get_default_graph()
 with tf.Session(graph = restored_graph) as sess:
     saver = tf.train.Saver()
-    saver.restore(sess, "w2v\\word_emb")
+    saver.restore(sess, "tf_saved_models\\word_emb")
     # initialize restored variables
     sess.run(tf.global_variables())
     # print restored weights and bias
