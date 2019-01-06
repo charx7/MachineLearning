@@ -44,14 +44,14 @@ if __name__ == '__main__':
     integerized_sentences = list(vocab_processor.fit_transform(corpus))
     #set our vocab size
     vocab_size = len(vocab_processor.vocabulary_)
-    # get word-to-integer dictionary form vocabulary processor
+    # get word-to-integer dictionary from vocabulary processor
     vocab_dict = vocab_processor.vocabulary_._mapping
-    print("Vocabulary length is: {}".format(vocab_size))
-    print("Vocabulary dictionary is:")
-    print(vocab_dict)
+    # store word-to-integer dictionary as a Tensor to retrieve when importing model
+    tf_vocabulary = tf.Variable(list(vocab_dict.keys()), name = 'vocabulary')
+    tf_integerized_vocabulary = tf.Variable(list(vocab_dict.values()), name = 'integerized_vocabulary')
     
+    # form skipgrams
     WINDOW_SIZE = 2
-
     data = []
     for sentence in integerized_sentences:
         for idx, word in enumerate(sentence):
@@ -62,10 +62,10 @@ if __name__ == '__main__':
         print(text)
     df = pd.DataFrame(data, columns = ['input', 'label'])
     
-    # and get vocabulary to use in setting up the parameters for the training
+    # vocabulary size to use in setting up the parameters for the training
     ONE_HOT_DIM = len(vocab_processor.vocabulary_)
     # store vocabulary size as a Tensor to retrieve when importing model
-    vocabulary_size = tf.Variable(ONE_HOT_DIM, name = 'vocabulary_size')
+    tf_vocabulary_size = tf.Variable(ONE_HOT_DIM, name = 'vocabulary_size')
     
     X = [] # input word
     Y = [] # target word
