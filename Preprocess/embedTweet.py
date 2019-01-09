@@ -3,7 +3,11 @@ import numpy as np
 import tensorflow as tf
 
 
-def embedTweet(tweetToEmbed):
+def embedTweet(tweetToEmbed, modelRoute):
+    # Routes for restoration of our model
+    saverRoute = modelRoute + '.meta'
+    restoreRoute = modelRoute
+
     # Im not sure why do we need this one but it works XDXD
     # Restore the model we trained for word embeding
     restored_graph = tf.get_default_graph()
@@ -14,10 +18,10 @@ def embedTweet(tweetToEmbed):
     with tf.Session(graph = restored_graph) as sess:
 
         # Import the graph
-        saver = tf.train.import_meta_graph("tf_saved_models\\word_emb.meta")
+        saver = tf.train.import_meta_graph(saverRoute)
 
         saver = tf.train.Saver()
-        saver.restore(sess, "tf_saved_models\\word_emb")
+        saver.restore(sess, restoreRoute)
         # initialize restored variables
         sess.run(tf.global_variables())
 
@@ -37,11 +41,11 @@ def embedTweet(tweetToEmbed):
         # form a one-hot-vector of the test word
         ohv_test_word = np.zeros((1,sess.run('vocabulary_size:0')))
         # If we find it on the vocab (exists) then we use its embedding
-        if test_word in vocab:
-            integerize_test_word = int_vocab[vocab.index(test_word)]
-            ohv_test_word[0, integerize_test_word] = 1;
-        else:
-            ohv_test_word[0,0] = 1;
+        #if test_word in vocab:
+        #    integerize_test_word = int_vocab[vocab.index(test_word)]
+        #    ohv_test_word[0, integerize_test_word] = 1;
+        #else:
+        #    ohv_test_word[0,0] = 1;
         # restore placeholders for input and operation
         test_input = restored_graph.get_tensor_by_name('one_hot_input:0')
         op_to_restore = restored_graph.get_tensor_by_name('w2v:0')
@@ -60,7 +64,7 @@ if __name__ == '__main__':
     ohv_test_sent = np.zeros((1,50)) # TODO restore embedding size don't hard code
     for test_word in test_sent:
         # Call the embed funtion
-        embed = embedTweet(test_word)
+        embed = embedTweet(test_word, 'tf_saved_models\\word_emb')
         # Sum the embeded vectors to form the embeded sentence
         ohv_test_sent = ohv_test_sent + embed
 
