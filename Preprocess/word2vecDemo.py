@@ -3,11 +3,15 @@ import numpy as np
 import tensorflow as tf
 import tflearn
 import time
+import sys
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 # custom imports
 from preprocess import cleanString
+# User defined Imports ugly python import syntax >:(
+sys.path.append('../Preprocess')
+from dataJoin import joinData
 
 # preprocess corpus
 def preprocess_corpus(corpus):
@@ -30,7 +34,7 @@ def preprocess_corpus(corpus):
             # add preprocessed tweet to preprocessed_corpus
             preprocessed_corpus.append(preprosessed_tweet)
     return preprocessed_corpus
-        
+
 # Stop words simple function for the demo
 def remove_stop_words(corpus):
     stop_words = ['is', 'a', 'will', 'be']
@@ -50,13 +54,23 @@ def to_one_hot_encoding(data_point_index):
     return one_hot_encoding
 
 if __name__ == '__main__':
-    # read data
-    data = pd.read_csv("../data/traditionalSpamBotsChunks1/tweets_chunk1.csv")
+    # Read the dataz
+    botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
+    genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
+
+    print('Joining data...')
+    data = joinData(botData.head(500), genuineData.head(500))
+    # How many tweets are in the full dataset
     print("Read {0:d} tweets".format(len(data)))
-    raw_tweets = data["text"].head(100)
+    # Clear memory for eficiency
+    del botData
+    del genuineData
+    # How many tweets are we taking for the embeddings
+    raw_tweets = data["text"].head(1000)
+
     print("Will process {0:d} tweets".format(len(raw_tweets)))
     clean_corpus = preprocess_corpus(raw_tweets);
-    
+
     # Corpus for the demo
     corpus = ['king is a strong man',
               'queen is a wise woman',
@@ -76,7 +90,7 @@ if __name__ == '__main__':
     vocab_processor = tflearn.data_utils.VocabularyProcessor(max_sentence_length)
     # our sentences represented as indices instead of words
     integerized_sentences = list(vocab_processor.fit_transform(clean_corpus))
-    
+
     #set our vocab size
     vocab_size = len(vocab_processor.vocabulary_)
     # get word-to-integer dictionary from vocabulary processor
@@ -95,13 +109,13 @@ if __name__ == '__main__':
     #for text in clean_corpus:
     #    print(text)
     df = pd.DataFrame(data, columns = ['input', 'label'])
-    
+
     # vocabulary size to use in setting up the parameters for the training
     ONE_HOT_DIM = len(vocab_processor.vocabulary_)
     print("Vocabulary size: {}".format(ONE_HOT_DIM))
     # store vocabulary size as a Tensor to retrieve when importing model
     tf_vocabulary_size = tf.Variable(ONE_HOT_DIM, name = 'vocabulary_size')
-    
+
     X = [] # input word
     Y = [] # target word
 
@@ -133,8 +147,19 @@ if __name__ == '__main__':
     # loss function: cross entropy
     loss = tf.reduce_mean(-tf.reduce_sum(y_label * tf.log(prediction), axis=[1]))
 
+    # Define an adaptive learning rate for gradient descent
+    global_step = tf.Variable(0, trainable=False)
+    starter_learning_rate = 0.01
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
+                                       100000, 0.96, staircase=True)
+
     # training operation
-    train_op = tf.train.GradientDescentOptimizer(0.05).minimize(loss)
+    #train_op = tf.train.AdamOptimizer(0.01).minimize(loss)
+
+    # Adaptive learning step
+    train_op = (
+        tf.train.GradientDescentOptimizer(learning_rate)
+        .minimize(loss, global_step=global_step))
 
     # Add ops to save and restore variables
     saver = tf.train.Saver()
@@ -144,12 +169,12 @@ if __name__ == '__main__':
     init = tf.global_variables_initializer()
     sess.run(init)
 
-    iteration = 20000
+    iteration = 10000
     for i in range(iteration):
         # input is X_train which is one hot encoded word
         # label is Y_train which is one hot encoded neighbor word
         sess.run(train_op, feed_dict={x: X_train, y_label: Y_train})
-        if i % 3000 == 0:
+        if i % 10 == 0:
             print('iteration '+str(i)+' loss is : ', sess.run(loss, feed_dict={x: X_train, y_label: Y_train}))
     print("--- %s seconds ---" % (time.time() - start_time))
     save_path = saver.save(sess, "tf_saved_models\\word_emb")

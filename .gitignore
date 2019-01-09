@@ -4,4 +4,3 @@
 /data/
 /.idea/
 /Models/__pycache__/
-*/tf_saved_models/
