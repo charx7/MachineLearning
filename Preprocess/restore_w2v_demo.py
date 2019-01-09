@@ -4,7 +4,7 @@ import tensorflow as tf
 
 # form test data
 test_word = 'ray'
-test_sent = ['king', 'strong', 'man'] # clean and tokenize
+test_sent = ['make', 'feel', 'women', 'thoughtful', 'gifts'] # TODO preprocess pipeline for test sentence
 # restore model
 saver = tf.train.import_meta_graph("tf_saved_models\\word_emb.meta")
 restored_graph = tf.get_default_graph()
@@ -30,7 +30,7 @@ with tf.Session(graph = restored_graph) as sess:
     vocab = [w.decode() for w in vocab]
 
     # form embedding of sentence from its words' embeddings
-    ohv_test_sent = np.zeros((1,2)) # restore embedding size or hard code?
+    ohv_test_sent = np.zeros((1,50)) # TODO restore embedding size don't hard code
     for test_word in test_sent:
         # form a one-hot-vector of the test word
         ohv_test_word = np.zeros((1,sess.run('vocabulary_size:0')))
@@ -44,7 +44,7 @@ with tf.Session(graph = restored_graph) as sess:
         op_to_restore = restored_graph.get_tensor_by_name('w2v:0')
         # predict and print test word
         prediction = sess.run(op_to_restore, {test_input:ohv_test_word})
-        print("The embedding of '{0}' is: \n {1}".format(test_word, prediction))
+        print("The embedding of '{0}' is: {1}".format(test_word, prediction))
         ohv_test_sent = ohv_test_sent + prediction
     print("The embedding of '{0}' is: \n {1}".format(test_sent, ohv_test_sent))
     
