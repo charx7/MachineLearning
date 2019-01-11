@@ -1,0 +1,8 @@
+/.ipynb_checkpoints/
+/utils/__pycache__/
+/preProcess/__pycache__/
+/data/
+/.idea/
+/Models/__pycache__/
+/Preprocess/glove.twitter.27B.25d.txt
+.idea
