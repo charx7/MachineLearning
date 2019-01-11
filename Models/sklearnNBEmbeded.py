@@ -3,6 +3,7 @@ import math
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB, GaussianNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+from sklearn.externals import joblib
 
 import sys
 # User defined Imports ugly python import syntax >:(
@@ -94,3 +95,9 @@ if __name__ == '__main__':
 
     for doc, category in zip(docs_new, predicted):
          print('%r => %s' % (doc, target_names[category]))
+
+    # Write the model into memory:
+    print('Writting Model into memory...')
+    # Model dump
+    joblib.dump(naive_bayes_classifier,'../Trained_Models/nb_own_w2v_model')
+    print('Sucess model written.')

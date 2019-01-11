@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn import svm
 from sklearn.model_selection import train_test_split
+from sklearn.externals import joblib
 from tqdm import tqdm
 import time
 import sys
@@ -90,3 +91,6 @@ if __name__ == '__main__':
     print('\nThe best hyperparameters on the grid are: ', best_params)
     print('\nScoring: ', best_score, ' on the validation set.')
     print('\nScoring: ', test_score, ' on the test set.')
+
+    # Model dump
+    joblib.dump(best_params['bestModel'],'../Trained_Models/svm_tfIdf_model')

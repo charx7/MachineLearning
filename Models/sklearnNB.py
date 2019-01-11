@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
@@ -17,13 +18,17 @@ if __name__ == '__main__':
 
     print('Loading data...')
     # Start Data loading using paralelization parallelLoad(route_to_files) function!
-    filesRoute = '../data/traditionalSpamBotsChunks1/'
-    botData = parallelLoad(filesRoute)
-    filesRoute = '../data/genuineTweetsChunks/'
-    genuineData = parallelLoad(filesRoute)
+    #filesRoute = '../data/traditionalSpamBotsChunks1/'
+    #botData = parallelLoad(filesRoute)
+    #filesRoute = '../data/genuineTweetsChunks/'
+    #genuineData = parallelLoad(filesRoute)
+
+    # Read the english dataz
+    botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
+    genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(2000), genuineData.head(2000))
+    df = joinData(botData.head(5000), genuineData.head(5000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -90,3 +95,9 @@ if __name__ == '__main__':
 
     for doc, category in zip(docs_new, predicted):
         print('%r => %s' % (doc, target_names[category]))
+
+    # Write the model into memory:
+    print('Writting Model into memory...')
+    with open('../Trained_Models/TfIdf_Nb_Model','wb') as f:
+        pickle.dump(naive_bayes_classifier, f)
+    print('Sucess model written.')

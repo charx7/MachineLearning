@@ -87,3 +87,9 @@ if __name__ == '__main__':
 
     for doc, category in zip(docs_new, predicted):
          print('%r => %s' % (doc, target_names[category]))
+
+    # Write the model into memory:
+    print('Writting Model into memory...')
+    # Model dump
+    joblib.dump(naive_bayes_classifier,'../Trained_Models/nb_glove_w2v_model')
+    print('Sucess model written.')
