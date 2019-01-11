@@ -50,7 +50,7 @@ def embed_Dataframe(dataframeToEmbed, modelRoute):
         print('Embedding the Dataframe...')
         for tweet in tqdm(dataframeToEmbed):
             # For each word in the current tweet we run the embed
-            ohv_test_sent = np.zeros((1,50)) # TODO restore embedding size don't hard code
+            ohv_test_sent = np.zeros((1,9)) # TODO restore embedding size don't hard code
 
             for word in tweet:
                 # If we find it on the vocab (exists) then we use its embedding

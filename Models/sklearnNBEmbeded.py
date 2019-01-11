@@ -22,7 +22,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(1000), genuineData.head(1000))
+    df = joinData(botData.head(2000), genuineData.head(2000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -67,28 +67,30 @@ if __name__ == '__main__':
     print('The accuracy of NB on our training data is: ', trainingAcc)
 
     # TODO Adapt to the new embeded methods
-    # # convert to array of text values
-    # test_tweets = X_test.values
+    # convert to array of text values
+    #test_tweets = X_test.values
+    test_tweets_w2v = embed_Dataframe(X_test,'../Preprocess/tf_saved_models\\word_emb')
     #
     # # Perform vector transformation on the test set
     # test_tweets_counts = count_vect.transform(test_tweets)
     # test_tweets_tfidf = tf_transformer.transform(test_tweets_counts)
-    # # Run the score function on the transformed test set
-    # testAcc = naive_bayes_classifier.score(test_tweets_tfidf, y_test.values)
-    # print('The accuracy of NB on our test set data is: ', testAcc)
+    # Run the score function on the transformed test set
+    testAcc = naive_bayes_classifier.score(test_tweets_w2v, y_test.values)
+    print('The accuracy of NB on our test set data is: ', testAcc)
     #
-    # # Test output of the clasifier with fun phrases to be replaced by real tweets
-    # docs_new = ['Get your free stuff',
-    #             'oh my god taylor mascaras on sale',
-    #             'free indian job get recruited',
-    #             'im slowly dying while doing this project help']
-    # # Transform the text we are going to test
+    # Test output of the clasifier with fun phrases to be replaced by real tweets
+    docs_new = ['Get your free stuff',
+                'oh my god taylor mascaras on sale',
+                'free indian job get recruited',
+                'im slowly dying while doing this project help']
+    # Transform the text we are going to test
     # X_new_counts = count_vect.transform(docs_new)
-    # X_new_tfidf = tf_transformer.transform(X_new_counts)
+    #X_new_tfidf = tf_transformer.transform(X_new_counts)
+    X_new_w2v = embed_Dataframe(docs_new, '../Preprocess/tf_saved_models\\word_emb')
     # # Call the predict function of the classifier
-    # predicted = naive_bayes_classifier.predict(X_new_tfidf)
+    predicted = naive_bayes_classifier.predict(X_new_w2v)
     #
-    # target_names = ['Human', 'Bot']
-    #
-    # for doc, category in zip(docs_new, predicted):
-    #     print('%r => %s' % (doc, target_names[category]))
+    target_names = ['Human', 'Bot']
+
+    for doc, category in zip(docs_new, predicted):
+         print('%r => %s' % (doc, target_names[category]))

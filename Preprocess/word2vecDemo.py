@@ -59,14 +59,14 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    data = joinData(botData.head(500), genuineData.head(500))
+    data = joinData(botData.head(600), genuineData.head(600))
     # How many tweets are in the full dataset
     print("Read {0:d} tweets".format(len(data)))
     # Clear memory for eficiency
     del botData
     del genuineData
     # How many tweets are we taking for the embeddings
-    raw_tweets = data["text"].head(1000)
+    raw_tweets = data["text"].head(1200)
 
     print("Will process {0:d} tweets".format(len(raw_tweets)))
     clean_corpus = preprocess_corpus(raw_tweets);
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     y_label = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM))
 
     # word embedding will be 2 dimension for 2d visualization
-    EMBEDDING_DIM = 50
+    EMBEDDING_DIM = 9
 
     # hidden layer: which represents word vector eventually
     W1 = tf.Variable(tf.random_normal([ONE_HOT_DIM, EMBEDDING_DIM]), name = 'W1')
