@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /.ipynb_checkpoints/
 /utils/__pycache__/
 /preProcess/__pycache__/
@@ -6,3 +7,12 @@
 /Models/__pycache__/
 /Preprocess/glove.twitter.27B.25d.txt
 .idea
+||||||| merged common ancestors
+=======
+/.ipynb_checkpoints/
+/utils/__pycache__/
+/preProcess/__pycache__/
+/data/
+/.idea/
+/Models/__pycache__/
+>>>>>>> 4aa0c68bfa17dd5af7a20ab16386d5301690731f
