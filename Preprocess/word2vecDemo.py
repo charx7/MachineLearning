@@ -25,8 +25,8 @@ def preprocess_corpus(corpus):
         tokenized_tweet = tknzr.tokenize(clean_tweet)
         # stopword removal
         tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
-        # remove words with < 4 letters
-        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 4 ]
+        # remove words with < 3 letters
+        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 3 ]
         # reassemble sentence
         preprosessed_tweet = ' '.join(tokenized_tweet)
         # check if tweet is empty after preprocessing
@@ -35,69 +35,89 @@ def preprocess_corpus(corpus):
             preprocessed_corpus.append(preprosessed_tweet)
     return preprocessed_corpus
 
-# Stop words simple function for the demo
-def remove_stop_words(corpus):
-    stop_words = ['is', 'a', 'will', 'be']
-    results = []
-    for text in corpus:
-        tmp = text.split(' ')
-        for stop_word in stop_words:
-            if stop_word in tmp:
-                tmp.remove(stop_word)
-        results.append(" ".join(tmp))
-    return results
+# define w2v model
+def build_word2vec():
+    # store information in Tensors to retrieve when importing model
+    tf_vocabulary = tf.Variable(list(vocab_dict.keys()), name = 'vocabulary')
+    tf_integerized_vocabulary = tf.Variable(list(vocab_dict.values()), name = 'integerized_vocabulary')
+    tf_embedding_size = tf.Variable(embedding_size, name = 'embedding_size')
+    
+    #Pivot Words
+    x = tf.placeholder(tf.int32, shape=[None,], name="x_pivot_idxs")
+    #Target Words
+    y = tf.placeholder(tf.int32, shape=[None,], name="y_target_idxs")
 
-# function to convert numbers to one hot vectors
-def to_one_hot_encoding(data_point_index):
-    one_hot_encoding = np.zeros(ONE_HOT_DIM)
-    one_hot_encoding[data_point_index] = 1
-    return one_hot_encoding
+    ## Make our word embedding matrix
+    Embedding = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
+                            name="word_embedding")
+
+
+    #Weights and biases for NCE Loss
+    nce_weights = tf.Variable(tf.truncated_normal([vocab_size, embedding_size],
+                                                  stddev=tf.sqrt(1/embedding_size)),
+                            name="nce_weights")
+    nce_biases = tf.Variable(tf.zeros([vocab_size]), name="nce_biases")
+    
+
+    #Look up pivot word embedding
+    pivot = tf.nn.embedding_lookup(Embedding, x, name="word_embed_lookup")
+    
+
+    #expand the dimension and set shape
+    train_labels = tf.reshape(y, [tf.shape(y)[0], 1])
+
+    ##Compute Loss
+    loss = tf.reduce_mean(tf.nn.nce_loss(weights = nce_weights,
+                                         biases  = nce_biases,
+                                         labels  = train_labels,
+                                         inputs  = pivot,
+                                         num_sampled = num_samples,
+                                         num_classes = vocab_size,
+                                         num_true = 1))
+
+    ##Create optimizer
+    optimizer = tf.contrib.layers.optimize_loss(loss,
+                                                tf.train.get_global_step(),
+                                                learning_rate,
+                                                "Adam",
+                                                clip_gradients=5.0,
+                                                name="Optimizer")
+    sesh = tf.Session()
+    
+    sesh.run(tf.global_variables_initializer())
+
+    return optimizer, loss, x, y, sesh
 
 if __name__ == '__main__':
     # Read the dataz
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
-
     print('Joining data...')
-    data = joinData(botData.head(600), genuineData.head(600))
+    data = joinData(botData.head(5000), genuineData.head(5000))
     # How many tweets are in the full dataset
     print("Read {0:d} tweets".format(len(data)))
     # Clear memory for eficiency
     del botData
     del genuineData
     # How many tweets are we taking for the embeddings
-    raw_tweets = data["text"].head(1200)
-
+    raw_tweets = data["text"].head(10000)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
-    clean_corpus = preprocess_corpus(raw_tweets);
 
-    # Corpus for the demo
-    corpus = ['king is a strong man',
-              'queen is a wise woman',
-              'boy is a young man',
-              'girl is a young woman',
-              'prince is a young king',
-              'princess is a young queen',
-              'man is strong',
-              'woman is pretty',
-              'prince is a boy will be king',
-              'princess is a girl will be queen']
-    # Get the clean Corpus
-    corpus = remove_stop_words(corpus)
+    # corpus to use
+    clean_corpus = preprocess_corpus(raw_tweets);
     # define maximum length of sentence
     max_sentence_length = max([len(x.split(" ")) for x in clean_corpus])
     #make vocab processor
     vocab_processor = tflearn.data_utils.VocabularyProcessor(max_sentence_length)
     # our sentences represented as indices instead of words
     integerized_sentences = list(vocab_processor.fit_transform(clean_corpus))
-
+    print(">> Vocabulary size: {}".format(len(vocab_processor.vocabulary_)))
+    
     #set our vocab size
     vocab_size = len(vocab_processor.vocabulary_)
     # get word-to-integer dictionary from vocabulary processor
     vocab_dict = vocab_processor.vocabulary_._mapping
-    # store word-to-integer dictionary as a Tensor to retrieve when importing model
-    tf_vocabulary = tf.Variable(list(vocab_dict.keys()), name = 'vocabulary')
-    tf_integerized_vocabulary = tf.Variable(list(vocab_dict.values()), name = 'integerized_vocabulary')
+    
     # form skipgrams
     WINDOW_SIZE = 2
     data = []
@@ -106,85 +126,49 @@ if __name__ == '__main__':
             for neighbor in sentence[max(idx - WINDOW_SIZE, 0) : min(idx + WINDOW_SIZE, len(sentence)) + 1]:
                 if neighbor != word:
                     data.append([word, neighbor])
-    #for text in clean_corpus:
-    #    print(text)
     df = pd.DataFrame(data, columns = ['input', 'label'])
 
-    # vocabulary size to use in setting up the parameters for the training
-    ONE_HOT_DIM = len(vocab_processor.vocabulary_)
-    print("Vocabulary size: {}".format(ONE_HOT_DIM))
-    # store vocabulary size as a Tensor to retrieve when importing model
-    tf_vocabulary_size = tf.Variable(ONE_HOT_DIM, name = 'vocabulary_size')
-
-    X = [] # input word
-    Y = [] # target word
-
+    # form training set
+    X_train = [] # input word
+    y_train = [] # target word
     for x, y in zip(df['input'], df['label']):
-        X.append(to_one_hot_encoding(x))
-        Y.append(to_one_hot_encoding(y))
+        X_train.append(x)
+        y_train.append(y)
 
-    # convert them to numpy arrays
-    X_train = np.asarray(X)
-    Y_train = np.asarray(Y)
 
-    # making placeholders for X_train and Y_train
-    x = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM), name = 'one_hot_input')
-    y_label = tf.placeholder(tf.float32, shape=(None, ONE_HOT_DIM))
+    # Size of our embedding matrix
+    embedding_size = 128
+    # Number of samples for NCE Loss
+    num_samples = 64
+    # Learning Rate
+    learning_rate = 0.001
+    # initialize model
+    optimizer, loss, x, y, sesh = build_word2vec()
 
-    # word embedding will be 2 dimension for 2d visualization
-    EMBEDDING_DIM = 9
-
-    # hidden layer: which represents word vector eventually
-    W1 = tf.Variable(tf.random_normal([ONE_HOT_DIM, EMBEDDING_DIM]), name = 'W1')
-    b1 = tf.Variable(tf.random_normal([1]), name = 'b1') #bias
-    hidden_layer = tf.add(tf.matmul(x,W1), b1, name = 'w2v')
-
-    # output layer
-    W2 = tf.Variable(tf.random_normal([EMBEDDING_DIM, ONE_HOT_DIM]))
-    b2 = tf.Variable(tf.random_normal([1]))
-    prediction = tf.nn.softmax(tf.add( tf.matmul(hidden_layer, W2), b2))
-
-    # loss function: cross entropy
-    loss = tf.reduce_mean(-tf.reduce_sum(y_label * tf.log(prediction), axis=[1]))
-
-    # Define an adaptive learning rate for gradient descent
-    global_step = tf.Variable(0, trainable=False)
-    starter_learning_rate = 0.01
-    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
-                                       100000, 0.96, staircase=True)
-
-    # training operation
-    #train_op = tf.train.AdamOptimizer(0.01).minimize(loss)
-
-    # Adaptive learning step
-    train_op = (
-        tf.train.GradientDescentOptimizer(learning_rate)
-        .minimize(loss, global_step=global_step))
-
-    # Add ops to save and restore variables
+    batch_size = 100
+    num_epochs = 15
+    # Num batches in training set
+    num_batches = len(X_train) // batch_size
+    print(">> Number of batches: {}".format(num_batches))
+    # create saver to save our weights
     saver = tf.train.Saver()
+
     start_time = time.time()
-    # Start the training
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
+    
+    for e in range(num_epochs):
+        print(">> EPOCH: {}".format(e+1))
+        for i in range(num_batches):
+            if i != range(num_batches-1):
+                x_batch = X_train[i*batch_size:i * batch_size + batch_size]
+                y_batch = y_train[i*batch_size:i * batch_size + batch_size]
+            else:
+                x_batch = X_train[i*batch_size:]
+                y_batch = y_train[i*batch_size:]
 
-    iteration = 10000
-    for i in range(iteration):
-        # input is X_train which is one hot encoded word
-        # label is Y_train which is one hot encoded neighbor word
-        sess.run(train_op, feed_dict={x: X_train, y_label: Y_train})
-        if i % 10 == 0:
-            print('iteration '+str(i)+' loss is : ', sess.run(loss, feed_dict={x: X_train, y_label: Y_train}))
+            _, l = sesh.run([optimizer, loss], feed_dict = {x: x_batch, y: y_batch})
+            
+            if (i>0 and i %100 == 0) or i==num_batches-1:
+                print("BATCH", i, "of", num_batches-1, "LOSS:", l)
+        save_path = saver.save(sesh, "tf_saved_models\\word_emb")
+        
     print("--- %s seconds ---" % (time.time() - start_time))
-    save_path = saver.save(sess, "tf_saved_models\\word_emb")
-    print("Model saved in path: %s" % save_path)
-    # Now the hidden layer (W1 + b1) is actually the word look up table
-    vectors = sess.run(W1 + b1)
-    print(vectors)
-
-    #cols = ['x{}'.format(i) for i in range(1,EMBEDDING_DIM+1)]
-    #w2v_df = pd.DataFrame(vectors, columns = cols)
-    #w2v_df['word'] = vocab_dict.keys()
-    #w2v_df = w2v_df[['word', cols]]
-    #print('The output vector model is: \n',w2v_df)
