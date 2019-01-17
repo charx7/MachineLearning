@@ -10,18 +10,19 @@ from preprocess import CustomAnalyzer, doFreq, doTf_IDF
 from dataJoin import joinData
 
 # read bot data
-bot_data = pd.read_csv("../data/traditionalSpamBotsChunks1/bot_english_tweets.csv")
+bot_data = pd.read_csv("../data/preprocessedTweets/bot_english_tweets.csv")
 print("Read {0:d} bot tweets".format(len(bot_data)))
 raw_bot_tweets = bot_data["text"]
 print("Will process {0:d} bot tweets".format(len(raw_bot_tweets)))
 
 # read genuine data
-genuine_data = pd.read_csv("../data/genuineTweetsChunks/genuine_english_tweets.csv")
+genuine_data = pd.read_csv("../data/preprocessedTweets/genuine_english_tweets.csv")
 print("Read {0:d} genuine tweets".format(len(genuine_data)))
 raw_genuine_tweets = genuine_data["text"]
 print("Will process {0:d} genuine tweets".format(len(raw_genuine_tweets)))
 
 # getting bot vocabulary
+print("Start retrieving BOT vocabulary")
 start_time = time.time()
 bot_freq_dict, bot_bow, bot_feature_names, bot_idf = doTf_IDF(raw_bot_tweets)
 print("--- %s seconds ---" % (time.time() - start_time))
@@ -33,6 +34,7 @@ for key, value in bot_freq_dict.items():
     i = i+1
 
 # getting genuine vocabulary
+print("Start retrieving GENUINE vocabulary")
 start_time = time.time()
 genuine_freq_dict, genuine_bow, genuine_feature_names, genuine_idf = doTf_IDF(raw_genuine_tweets)
 print("--- %s seconds ---" % (time.time() - start_time))
