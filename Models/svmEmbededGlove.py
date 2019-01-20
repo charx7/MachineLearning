@@ -20,7 +20,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(4000), genuineData.head(4000))
+    df = joinData(botData.sample(8000), genuineData.sample(8000))
 
     # Reset indexes after join
     df = df.reset_index()
