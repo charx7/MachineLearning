@@ -3,7 +3,10 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+from preprocess import embedding_preprocess
+
 def embed_Dataframe(dataframeToEmbed, modelRoute):
+    
     # Routes for restoration of our model
     saverRoute = modelRoute + '.meta'
     restoreRoute = modelRoute
