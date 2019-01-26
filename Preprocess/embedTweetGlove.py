@@ -24,7 +24,7 @@ def embed_Dataframe_with_Glove(dataframeToEmbed, gloveModel):
 
     for tweet in tqdm(dataframeToEmbed):
         # Define an empty np 0s array
-        ohv_test_sent = np.zeros((1,25)) # TODO restore embedding size
+        ohv_test_sent = np.zeros((1,200)) # TODO restore embedding size
 
         for word in tweet:
             # If we find it on the vocab (exists) then we use its embedding
@@ -53,6 +53,6 @@ def embed_Dataframe_with_Glove(dataframeToEmbed, gloveModel):
 
 if __name__ == '__main__':
         # Load the glove vectors
-        gloveModel = loadGloveModel('glove.twitter.27B.25d.txt')
+        gloveModel = loadGloveModel('glove.twitter.27B.50d.txt')
         # test print 'unk' is the UNKNOWN_TOKEN
         print(gloveModel['unk'])

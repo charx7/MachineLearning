@@ -4,6 +4,7 @@ import time
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB, GaussianNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+from sklearn.externals import joblib
 
 import sys
 # User defined Imports ugly python import syntax >:(
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(50000), genuineData.head(50000))
+    df = joinData(botData.sample(50000), genuineData.sample(50000))
 
     # Reset indexes after join
     df = df.reset_index()

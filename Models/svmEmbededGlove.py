@@ -20,7 +20,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(4000), genuineData.head(4000))
+    df = joinData(botData.sample(5000), genuineData.sample(5000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # Time it
     start_time = time.time()
     # Load the glove model
-    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.25d.txt')
+    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.200d.txt')
     print('Finish loading the Glove model!')
 
     # Begin the Glove embed

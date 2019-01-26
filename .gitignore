@@ -5,4 +5,7 @@
 /.idea/
 /Models/__pycache__/
 /Preprocess/glove.twitter.27B.25d.txt
+/Preprocess/glove.twitter.27B.50d.txt
+/Preprocess/glove.twitter.27B.100d.txt
+/Preprocess/glove.twitter.27B.200d.txt
 .idea

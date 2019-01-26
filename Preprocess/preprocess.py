@@ -32,13 +32,14 @@ def transform_tf(raw_tweets, **kwargs):
     my_analyzer = CustomAnalyzer()
     # Get the counts
     if 'vocabulary' in kwargs:
+        print('Im using the custom vocab :D')
         count_vect = CountVectorizer(vocabulary=kwargs['vocabulary'], analyzer=my_analyzer)
     else:
-        count_vect = CountVectorizer(max_features=1000, vocabulary=None, analyzer=my_analyzer)
+        count_vect = CountVectorizer(ngram_range=(1,1), max_features=1500, vocabulary=None, analyzer=my_analyzer)
     # Get them counts
     raw_tweets_counts = count_vect.fit_transform(raw_tweets)
     # Create an object of TfidfTransformer
-    tf_transformer = TfidfTransformer(use_idf=False).fit(raw_tweets_counts)
+    tf_transformer = TfidfTransformer(use_idf=True).fit(raw_tweets_counts)
     # transform the word counts
     raw_tweets_tf = tf_transformer.transform(raw_tweets_counts)
 

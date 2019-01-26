@@ -18,7 +18,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(5000), genuineData.head(5000))
+    df = joinData(botData.sample(5000), genuineData.sample(5000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     start_time = time.time()
     for C in tqdm(C_values):
         for gamma in gamma_values:
-            svc = svm.SVC(C=C, gamma=gamma)
+            svc = svm.SVC(kernel='rbf', C=C, gamma=gamma)
             svc.fit(X_train_transformed, y_train.values)
             score = svc.score(val_tweets_tfidf, y_val.values)
 

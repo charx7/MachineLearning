@@ -28,7 +28,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.head(5000), genuineData.head(5000))
+    df = joinData(botData.sample(30000), genuineData.sample(30000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -50,6 +50,10 @@ if __name__ == '__main__':
 
     # Do BoW for freq extraction
     trainingFull = trainingFull["text"][:]
+
+    # Load common vocab (optional)
+    #common_vocab = pd.read_csv('../Preprocess/complete_vocabulary.csv')
+
     # Rerturn the transformer and vectorizer objects
     X_train_transformed, count_vect, tf_transformer = transform_tf(trainingFull)
 
