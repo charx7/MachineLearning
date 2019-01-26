@@ -4,19 +4,23 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from preprocess import embedding_preprocess
+from word2vecDemo import preprocess_corpus
 
 def embed_Dataframe(dataframeToEmbed, modelRoute):
-    
+    # Do the same preprocess as on the embed method
+    dataframeToEmbed = preprocess_corpus(dataframeToEmbed)
+
     # Routes for restoration of our model
     saverRoute = modelRoute + '.meta'
     restoreRoute = modelRoute
+
+    # Reset the graph
+    tf.reset_default_graph()
 
     # Im not sure why do we need this one but it works XDXD
     # Restore the model we trained for word embeding
     restored_graph = tf.get_default_graph()
 
-    # Reset the graph
-    tf.reset_default_graph()
     # Start the tf session with the restored parameters to run the predict func
     with tf.Session(graph = restored_graph) as sess:
 
@@ -106,7 +110,7 @@ def embedTweet(word, modelRoute):
         # restore placeholders for input and operation
         test_input = restored_graph.get_tensor_by_name('x_pivot_idxs:0')
         op_to_restore = restored_graph.get_tensor_by_name('word_embed_lookup:0')
-        
+
         # get and evaluate tf variables for vocabulary and indexed vocabulary
         tf_vocabulary = restored_graph.get_tensor_by_name('vocabulary:0')
         vocab = tf_vocabulary.eval()

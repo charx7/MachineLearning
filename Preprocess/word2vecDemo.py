@@ -33,6 +33,11 @@ def preprocess_corpus(corpus):
         if len(preprosessed_tweet) > 0:
             # add preprocessed tweet to preprocessed_corpus
             preprocessed_corpus.append(preprosessed_tweet)
+        # Add case for empty tweets after the transformation TODO(revision needed)
+        else:
+            # Append the 'EMPTY AFTER PREPROCESS' token
+            preprocessed_corpus.append('EMPTY_AFTER_PREPROCESS')
+
     return preprocessed_corpus
 
 # define w2v model
@@ -41,7 +46,7 @@ def build_word2vec():
     tf_vocabulary = tf.Variable(list(vocab_dict.keys()), name = 'vocabulary')
     tf_integerized_vocabulary = tf.Variable(list(vocab_dict.values()), name = 'integerized_vocabulary')
     tf_embedding_size = tf.Variable(embedding_size, name = 'embedding_size')
-    
+
     #Pivot Words
     x = tf.placeholder(tf.int32, shape=[None,], name="x_pivot_idxs")
     #Target Words
@@ -57,11 +62,11 @@ def build_word2vec():
                                                   stddev=tf.sqrt(1/embedding_size)),
                             name="nce_weights")
     nce_biases = tf.Variable(tf.zeros([vocab_size]), name="nce_biases")
-    
+
 
     #Look up pivot word embedding
     pivot = tf.nn.embedding_lookup(Embedding, x, name="word_embed_lookup")
-    
+
 
     #expand the dimension and set shape
     train_labels = tf.reshape(y, [tf.shape(y)[0], 1])
@@ -83,7 +88,7 @@ def build_word2vec():
                                                 clip_gradients=5.0,
                                                 name="Optimizer")
     sesh = tf.Session()
-    
+
     sesh.run(tf.global_variables_initializer())
 
     return optimizer, loss, x, y, sesh
@@ -93,7 +98,7 @@ if __name__ == '__main__':
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
     print('Joining data...')
-    data = joinData(botData.head(5000), genuineData.head(5000))
+    data = joinData(botData.sample(10000), genuineData.sample(10000))
     # How many tweets are in the full dataset
     print("Read {0:d} tweets".format(len(data)))
     # Clear memory for eficiency
@@ -103,8 +108,11 @@ if __name__ == '__main__':
     raw_tweets = data["text"].head(10000)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
 
-    # corpus to use
+    # Corpus to use
     clean_corpus = preprocess_corpus(raw_tweets);
+    # Print shape for debug
+    #print('The shape of the corpus is: \n',np.array(clean_corpus).shape)
+
     # define maximum length of sentence
     max_sentence_length = max([len(x.split(" ")) for x in clean_corpus])
     #make vocab processor
@@ -112,12 +120,12 @@ if __name__ == '__main__':
     # our sentences represented as indices instead of words
     integerized_sentences = list(vocab_processor.fit_transform(clean_corpus))
     print(">> Vocabulary size: {}".format(len(vocab_processor.vocabulary_)))
-    
+
     #set our vocab size
     vocab_size = len(vocab_processor.vocabulary_)
     # get word-to-integer dictionary from vocabulary processor
     vocab_dict = vocab_processor.vocabulary_._mapping
-    
+
     # form skipgrams
     WINDOW_SIZE = 2
     data = []
@@ -154,7 +162,7 @@ if __name__ == '__main__':
     saver = tf.train.Saver()
 
     start_time = time.time()
-    
+
     for e in range(num_epochs):
         print(">> EPOCH: {}".format(e+1))
         for i in range(num_batches):
@@ -166,9 +174,9 @@ if __name__ == '__main__':
                 y_batch = y_train[i*batch_size:]
 
             _, l = sesh.run([optimizer, loss], feed_dict = {x: x_batch, y: y_batch})
-            
+
             if (i>0 and i %100 == 0) or i==num_batches-1:
                 print("BATCH", i, "of", num_batches-1, "LOSS:", l)
         save_path = saver.save(sesh, "tf_saved_models\\word_emb")
-        
+
     print("--- %s seconds ---" % (time.time() - start_time))

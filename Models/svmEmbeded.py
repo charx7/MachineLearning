@@ -19,7 +19,7 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.sample(1000), genuineData.sample(1000))
+    df = joinData(botData.sample(3000), genuineData.sample(3000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -47,11 +47,13 @@ if __name__ == '__main__':
     print('-----Init tf transform on the dataset to a vector form------')
     print('-----Using w2v----------------------------------------------\n')
 
+
     # Time it
     start_time = time.time()
-    #X_train_transformed, count_vect, tf_transformer = transform_tf(trainingFull)
-    X_train_transformed = embed_Dataframe(X_train, '../Preprocess/tf_saved_models\\word_emb')
+    print('The shape of X_train b4 the embed is: ', X_train.shape)
 
+    X_train_transformed = embed_Dataframe(X_train, '../Preprocess/tf_saved_models\\word_emb')
+    print('The shape of X_train after the embed is: ', X_train_transformed.shape)
     print('-----End tf transform on the dataset to a vector form----\n')
 
     print('---Start transform on the validation set tweets----------\n')
