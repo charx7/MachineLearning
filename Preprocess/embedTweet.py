@@ -48,30 +48,79 @@ def embed_Dataframe(dataframeToEmbed, modelRoute):
         # Create a numpy empty array
         embededData = []
         print('Embedding the Dataframe...')
+        i = 0
         for tweet in tqdm(dataframeToEmbed):
+            i = i + 1
             # For each word in the current tweet we run the embed
             emb_test_sent = np.zeros((1,sess.run('embedding_size:0')))
+            # Init word counter as 0
+            nwords = 0
 
-            for word in tweet:
+            # Separate by whitespace
+            words = tweet.split()
+            for word in words:
                 # If we find it on the vocab (exists) then we use its embedding
                 if word in vocab:
-                    integerize_test_word = int_vocab[vocab.index(test_word)]
-                else:
-                    integerize_test_word = int_vocab[vocab.index('<UNK>')];
+                    # Get the number of Words
+                    nwords = nwords + 1
+                    integerize_test_word = int_vocab[vocab.index(word)]
 
+                    # input for embedding look-up is an array of integerized words
+                    int_words = []
+                    int_words.append(integerize_test_word)
+                    # predict and print test word
+                    embed = sess.run(op_to_restore, {test_input:int_words})
+
+                    #if (i % 100) == 0:
+                        #print('current word is: ', word)
+                        #print('The embed for the word: ', word, ' is: ', embed)
+
+                else:
+                    nwords = nwords + 1
+                    integerize_test_word = int_vocab[vocab.index('<UNK>')]
+
+                    # input for embedding look-up is an array of integerized words
+                    int_words = []
+                    int_words.append(integerize_test_word)
+                    # predict and print test word
+                    embed = sess.run(op_to_restore, {test_input:int_words})
+
+                    #if (i % 100) == 0:
+                        #print('Not found word, the unk word is: ', word)
+
+                        #print('The embed for the word: ', word, ' is: ', embed)
+                    #integerize_test_word = 0
+                    #embed = 0
+
+                # Sum the embeded vectors to form the embeded sentence
+                #emb_test_sent = emb_test_sent + embed
+                emb_test_sent = np.add(emb_test_sent, embed)
+
+            # Condition for no words founded
+            if nwords == 0:
+                # To prevent division by 0
+                nwords = 1
+                # To ensure we get the unknows token as the transformation
+                integerize_test_word = int_vocab[vocab.index('<UNK>')]
                 # input for embedding look-up is an array of integerized words
                 int_words = []
                 int_words.append(integerize_test_word)
                 # predict and print test word
-                embed = sess.run(op_to_restore, {test_input:int_words})
+                emb_test_sent = sess.run(op_to_restore, {test_input:int_words})
 
-                # Sum the embeded vectors to form the embeded sentence
-                emb_test_sent = emb_test_sent + embed
+            # Divide the result by number of words to get an average
+            emb_test_sent = np.divide(emb_test_sent, nwords)
+
+            # For debugz
+            # if (i % 1000) == 0:
+            #     # print for debug
+            #     print('The number of words on the tweet is: ', nwords)
+            #     print('The tweet: ', tweet, ' embed is: \n', emb_test_sent)
 
             # Append to the data we are going to return
             embededData.append(emb_test_sent)
 
-        sess.close()
+    sess.close()
 
     npArrayEmbededData = np.array(embededData)
     reshapedNpArray = np.squeeze(npArrayEmbededData, axis=1)
