@@ -77,6 +77,7 @@ def embed_Dataframe(dataframeToEmbed, modelRoute):
 
                 else:
                     nwords = nwords + 1
+                    # in case we didnt found it replace with the unk token
                     integerize_test_word = int_vocab[vocab.index('<UNK>')]
 
                     # input for embedding look-up is an array of integerized words

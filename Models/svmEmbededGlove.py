@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
+from sklearn import preprocessing
 from tqdm import tqdm
 import time
 import sys
@@ -15,18 +16,15 @@ from embedTweetGlove import loadGloveModel, embed_Dataframe_with_Glove
 if __name__ == '__main__':
     print('Hi ill be a support vector machine :D! Using GLOVE(STANDFORD) embeds :O')
 
+    # Which kernel to use for the svm?
+    USE_LINEAR_KERNEL = True
+
     # Read the dataz
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-<<<<<<< HEAD
-    df = joinData(botData.sample(5000), genuineData.sample(5000))
-||||||| merged common ancestors
-    df = joinData(botData.head(4000), genuineData.head(4000))
-=======
-    df = joinData(botData.sample(8000), genuineData.sample(8000))
->>>>>>> abb4aa48870b9e8beb68717dc5536a6680be4bff
+    df = joinData(botData.sample(2000), genuineData.sample(2000))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -57,7 +55,7 @@ if __name__ == '__main__':
     # Time it
     start_time = time.time()
     # Load the glove model
-    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.200d.txt')
+    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.100d.txt')
     print('Finish loading the Glove model!')
 
     # Begin the Glove embed
@@ -88,17 +86,38 @@ if __name__ == '__main__':
     print('------Init hyperparameter Optimization-----')
     # Timer
     start_time = time.time()
-    for C in tqdm(C_values):
-        for gamma in gamma_values:
-            svc = svm.SVC(C=C, gamma=gamma)
+    if USE_LINEAR_KERNEL == True:
+        print('Using Linear Kernel...\n Scaling data...')
+        # Scale the data is neccesary for a linear kernel
+        # Create an scaler object
+        training_scaler = preprocessing.MinMaxScaler().fit(X_train_transformed)
+        # Fit the scaler object that just used train data to everything else
+        X_train_transformed = training_scaler.transform(X_train_transformed)
+        val_tweets_w2v = training_scaler.transform(val_tweets_w2v)
+        test_tweets_w2v = training_scaler.transform(test_tweets_w2v)
+        print('Init hyperparam optimization...')
+        for C in tqdm(C_values):
+            svc = svm.LinearSVC(C=C, max_iter = 70000)
             svc.fit(X_train_transformed, y_train.values)
             score = svc.score(val_tweets_w2v, y_val.values)
 
             if score > best_score:
                 best_score = score
                 best_params['C'] = C
-                best_params['gamma'] = gamma
                 best_params['bestModel'] = svc
+    else:
+        print('Using the rbf kernel...')
+        for C in tqdm(C_values):
+            for gamma in gamma_values:
+                svc = svm.SVC(C=C, gamma=gamma)
+                svc.fit(X_train_transformed, y_train.values)
+                score = svc.score(val_tweets_w2v, y_val.values)
+
+                if score > best_score:
+                    best_score = score
+                    best_params['C'] = C
+                    best_params['gamma'] = gamma
+                    best_params['bestModel'] = svc
 
     # Score the final model on the test set separated at the beginning
     # Retreive the best model from the best_params

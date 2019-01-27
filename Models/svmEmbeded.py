@@ -15,14 +15,14 @@ from embedTweet import embed_Dataframe
 if __name__ == '__main__':
     print('Hi ill be a support vector machine :D!\n Using own custom embeds :O')
     # Which kernel to use for the svm?
-    USE_LINEAR_KERNEL = False
+    USE_LINEAR_KERNEL = True
 
     # Read the dataz
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.sample(3000), genuineData.sample(3000))
+    df = joinData(botData.sample(2000), genuineData.sample(2000))
 
     # Reset indexes after join
     df = df.reset_index()
