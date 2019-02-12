@@ -27,7 +27,7 @@ def embed_Dataframe_with_Glove(dataframeToEmbed, gloveModel):
         # index for debug
         i = i + 1
         # Define an empty np 0s array
-        ohv_test_sent = np.zeros((1,100)) # TODO restore embedding size
+        ohv_test_sent = np.zeros((1,25)) # TODO restore embedding size
 
         # Separate by whitespace
         words = tweet.split()

@@ -4,7 +4,7 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from preprocess import embedding_preprocess
-from word2vecDemo import preprocess_corpus
+from word2vec import preprocess_corpus
 
 def embed_Dataframe(dataframeToEmbed, modelRoute):
     # Do the same preprocess as on the embed method

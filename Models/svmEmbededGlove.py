@@ -17,14 +17,14 @@ if __name__ == '__main__':
     print('Hi ill be a support vector machine :D! Using GLOVE(STANDFORD) embeds :O')
 
     # Which kernel to use for the svm?
-    USE_LINEAR_KERNEL = True
+    USE_LINEAR_KERNEL = False
 
     # Read the dataz
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-    df = joinData(botData.sample(2000), genuineData.sample(2000))
+    df = joinData(botData.sample(5000, random_state=42), genuineData.sample(5000, random_state=42))
 
     # Reset indexes after join
     df = df.reset_index()
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # Time it
     start_time = time.time()
     # Load the glove model
-    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.100d.txt')
+    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.25d.txt')
     print('Finish loading the Glove model!')
 
     # Begin the Glove embed
