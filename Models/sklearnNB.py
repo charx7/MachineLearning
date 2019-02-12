@@ -28,13 +28,8 @@ if __name__ == '__main__':
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
 
     print('Joining data...')
-<<<<<<< HEAD
-    df = joinData(botData.sample(30000), genuineData.sample(30000))
-||||||| merged common ancestors
-    df = joinData(botData.head(5000), genuineData.head(5000))
-=======
-    df = joinData(botData.sample(5000), genuineData.sample(5000))
->>>>>>> abb4aa48870b9e8beb68717dc5536a6680be4bff
+    seed = 42
+    df = joinData(botData.sample(5000, random_state = seed), genuineData.sample(5000, random_state = seed))
 
     # Reset indexes after join
     df = df.reset_index()
