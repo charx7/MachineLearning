@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+<<<<<<< HEAD
 from preprocess import embedding_preprocess
 from word2vecDemo import preprocess_corpus
 
@@ -10,6 +11,9 @@ def embed_Dataframe(dataframeToEmbed, modelRoute):
     # Do the same preprocess as on the embed method
     dataframeToEmbed = preprocess_corpus(dataframeToEmbed)
 
+=======
+def embed_Dataframe(dataframeToEmbed, modelRoute):
+>>>>>>> parent of abb4aa4... functionalized preprocessing for embeddigns
     # Routes for restoration of our model
     saverRoute = modelRoute + '.meta'
     restoreRoute = modelRoute

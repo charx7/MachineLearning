@@ -14,27 +14,6 @@ import time
 sys.path.append('../Preprocess')
 from dataJoin import joinData
 
-def embedding_preprocess(corpus):
-    tknzr = TweetTokenizer(strip_handles=True, reduce_len=True)
-    stemmer = SnowballStemmer("english")
-    preprocessed_corpus = []
-    for tweet in corpus:
-        # clean
-        clean_tweet = cleanString(tweet)
-        # tokenize
-        tokenized_tweet = tknzr.tokenize(clean_tweet)
-        # stopword removal
-        tokenized_tweet = [token for token in tokenized_tweet if token not in stopwords.words('english')]
-        # remove words with < 3 letters
-        tokenized_tweet = [token for token in tokenized_tweet if len(token) >= 3 ]
-        # reassemble sentence
-        preprosessed_tweet = ' '.join(tokenized_tweet)
-        # check if tweet is empty after preprocessing
-        if len(preprosessed_tweet) > 0:
-            # add preprocessed tweet to preprocessed_corpus
-            preprocessed_corpus.append(preprosessed_tweet)
-    return preprocessed_corpus
-
 def orderDict(dictToOrder):
     # To order a dictionary
     d_sorted_by_value = OrderedDict(sorted(dictToOrder.items(), key=lambda x: x[1]))
