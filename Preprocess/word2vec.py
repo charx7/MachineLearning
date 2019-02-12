@@ -98,14 +98,14 @@ if __name__ == '__main__':
     botData = pd.read_csv('../data/preprocessedTweets/bot_english_tweets.csv', index_col=0)
     genuineData = pd.read_csv('../data/preprocessedTweets/genuine_english_tweets.csv', index_col=0)
     print('Joining data...')
-    data = joinData(botData.sample(10000), genuineData.sample(10000))
+    data = joinData(botData.sample(10000, random_state=42), genuineData.sample(10000, random_state=42))
     # How many tweets are in the full dataset
     print("Read {0:d} tweets".format(len(data)))
     # Clear memory for eficiency
     del botData
     del genuineData
     # How many tweets are we taking for the embeddings
-    raw_tweets = data["text"].head(10000)
+    raw_tweets = data["text"].sample(20000)
     print("Will process {0:d} tweets".format(len(raw_tweets)))
 
     # Corpus to use
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
 
     # Size of our embedding matrix
-    embedding_size = 128
+    embedding_size = 25
     # Number of samples for NCE Loss
     num_samples = 64
     # Learning Rate
