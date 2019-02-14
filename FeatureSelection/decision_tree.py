@@ -14,14 +14,12 @@ from featureEncoding import featureEncoding
 tqdm.pandas()
 print('Loading data...')
 
-# Start Data loading using paralelization parallelLoad(route_to_files) function!
-filesRoute = '../data/traditionalSpamBotsChunks1/'
-botData = parallelLoad(filesRoute)
-filesRoute = '../data/genuineTweetsChunks/'
-genuineData = parallelLoad(filesRoute)
+botData = pd.read_csv('../data/datasets_full.csv/traditional_spambots_tweets.csv', index_col=0)
+genuineData = pd.read_csv('../data/datasets_full.csv/genuine_accounts_tweets.csv', index_col=0)
 
 print('Joining data...')
-df = joinData(botData.head(20000), genuineData.head(20000))
+seed = 42
+df = joinData(botData.sample(20000, random_state = seed), genuineData.sample(20000, random_state = seed))
 
 # See how many tweets we read
 print("Read {0:d} tweets".format(len(df)))
