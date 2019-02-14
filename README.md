@@ -2,9 +2,14 @@
 Machine Learning project for RUG-ml-2018
 
 ## Data
-The scripts will look for data files in specific directories. 
-The path "Data/preprocessedTweets" contains the English-filtered tweets which are used for the NLP approaches (both the models and the embeddings' training). 
-The path "Data/...." should contain the complete spambot and genuine tweet .csv files for the decision trees to run.
+The complete **cresci-2017** data set can be downloaded from the [Bot Repository](https://botometer.iuni.iu.edu/bot-repository/datasets.html). A filtered version used in the NLP approach has been uploaded to the repository.
+
+The Stanford GloVe embeddings can be downloaded from [here](https://nlp.stanford.edu/projects/glove/). 
+
+The scripts will look for data files in specific directories.
+* The English-filtered tweets, which are used for the NLP approaches (both the models and the embeddings' training), should be placed in the path "data/preprocessedTweets/".
+* The GloVe embeddings should be placed in the path "data/gloveEmbeds/".
+* The complete spambot and genuine tweet .csv files, used in the decision trees, should be placed in the path "data/....".
 
 ## You need to have anaconda or miniconda installed
 [Miniconda](https://conda.io/en/latest/miniconda.html)
