@@ -12,9 +12,8 @@ from preprocess import CustomAnalyzer, doFreq
 tqdm.pandas()
 print('Loading data...')
 
-botData = pd.read_csv('../data/datasets_full.csv/traditional_spambots_tweets.csv', index_col=0)
-genuineData = pd.read_csv('../data/datasets_full.csv/genuine_accounts_tweets.csv', index_col=0)
-
+botData = pd.read_csv('../data/datasets_full.csv/traditional_spambots_1.csv/tweets.csv', index_col=0)
+genuineData = pd.read_csv('../data/datasets_full.csv/genuine_accounts.csv/tweets.csv', index_col=0)
 print('Joining data...')
 seed = 42
 df = joinData(botData.sample(20000, random_state = seed), genuineData.sample(20000, random_state = seed))
