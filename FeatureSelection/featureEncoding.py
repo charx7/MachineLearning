@@ -7,7 +7,7 @@ def featureEncoding(df):
 	#df = dataOrigin#############################################################################################
 	dataOrigin = df #Origin data
 	# remove useless features manually
-	df = df.drop(['bot', 'id','user_id', 'text', 'source','reply_count'], axis=1)
+	df = df.drop(['bot', 'user_id', 'text', 'source','reply_count'], axis=1)
 
 	#truncated
 	df.truncated.loc[~df.truncated.isnull()] = 'Notnan'  # not nan
