@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # Time it
     start_time = time.time()
     # Load the glove model
-    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.25d.txt')
+    glove_model = loadGloveModel('../data/gloveEmbeds/glove.twitter.27B.25d.txt')
     print('Finish loading the Glove model!')
 
     # Begin the Glove embed

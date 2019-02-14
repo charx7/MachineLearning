@@ -35,8 +35,8 @@ def embed_Dataframe_with_Glove(dataframeToEmbed, gloveModel):
         # For average vector representation
         nwords = 0
         for word in words:
-            if (i % 1000) == 0:
-                print('Embedding the word: ', word)
+            #if (i % 1000) == 0:
+                #print('Embedding the word: ', word)
 
             # If we find it on the vocab (exists) then we use its embedding
             if word in gloveModel:

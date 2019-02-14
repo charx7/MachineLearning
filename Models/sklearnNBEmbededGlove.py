@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     start_time = time.time()
     # Load the glove model
-    glove_model = loadGloveModel('../Preprocess/glove.twitter.27B.25d.txt')
+    glove_model = loadGloveModel('../data/gloveEmbeds/glove.twitter.27B.25d.txt')
     print('Finish loading the Glove model!')
 
     X_train_transformed = embed_Dataframe_with_Glove(X_train, glove_model)
@@ -73,6 +73,7 @@ if __name__ == '__main__':
     # Run the score function on the transformed test set
     testAcc = naive_bayes_classifier.score(test_tweets_w2v, y_test.values)
     print('The accuracy of NB on our test set data is: ', testAcc)
+'''
     #
     # Test output of the clasifier with fun phrases to be replaced by real tweets
     docs_new = ['Get your free stuff',
@@ -89,7 +90,7 @@ if __name__ == '__main__':
 
     for doc, category in zip(docs_new, predicted):
          print('%r => %s' % (doc, target_names[category]))
-
+'''
     # Write the model into memory:
     print('Writting Model into memory...')
     # Model dump
