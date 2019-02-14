@@ -9,7 +9,7 @@ The Stanford GloVe embeddings can be downloaded from [here](https://nlp.stanford
 The scripts will look for data files in specific directories.
 * The English-filtered tweets, which are used for the NLP approaches (both the models and the embeddings' training), should be placed in the path "data/preprocessedTweets/".
 * The GloVe embeddings should be placed in the path "data/gloveEmbeds/".
-* The complete spambot and genuine tweets.csv files, used in the decision trees, should be placed in the path "data//datasets_full.csv/traditional_spambots_1.csv/" and "data/datasets_full.csv/genuine_accounts.csv/".
+* The complete spambot and genuine tweets.csv files, used in the decision trees, should be placed in the path "data/datasets_full.csv/traditional_spambots_1.csv/" and "data/datasets_full.csv/genuine_accounts.csv/".
 
 ## You need to have anaconda or miniconda installed
 [Miniconda](https://conda.io/en/latest/miniconda.html)
