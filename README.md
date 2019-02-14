@@ -55,3 +55,11 @@ It is advised to run the code while in the proper directories, as indicated in t
       python svmEmbededGlove.py 
       ```
 * Decision trees:
+  * run the model:
+    ```bat
+    python decision_tree.py 
+    ```
+    or the model by using scikit learn library:
+    ```bat
+    python skDecisionTree.py 
+    ```
