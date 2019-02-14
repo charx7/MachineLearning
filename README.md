@@ -1,6 +1,11 @@
 # Welcome to BotDetector3000
 Machine Learning project for RUG-ml-2018
 
+## Data
+The scripts will look for data files in specific directories. 
+The path "Data/preprocessedTweets" contains the English-filtered tweets which are used for the NLP approaches (both the models and the embeddings' training). 
+The path "Data/...." should contain the complete spambot and genuine tweet .csv files for the decision trees to run.
+
 ## You need to have anaconda or miniconda installed
 [Miniconda](https://conda.io/en/latest/miniconda.html)
 
