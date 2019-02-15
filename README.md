@@ -16,14 +16,14 @@ The scripts will look for data files in specific directories.
 
 [Anaconda](https://www.anaconda.com/distribution/)
 
-## To install the gpu environemnt run:
+## To install the GPU environemnt for the NLP approach, run:
 ```bat
 conda env create -f gpu-environment.yml
 ```
-## Or for the CPU one:
-```bat
-conda env create -f environment.yml
-```
+Prerequisites for using the GPU environment can be found [here](https://www.tensorflow.org/install/gpu), along with a list with compatible GPUs. 
+
+**Note: this is an environment for Windows! Using it in another OS can lead to compatibility issues.**
+
 ## The environment for running the decision tree model:
 ```bat
 conda env create -f cpu-environment.yml
