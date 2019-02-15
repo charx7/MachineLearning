@@ -60,7 +60,16 @@ It is advised to run the code while in the proper directories, as indicated in t
       python svmEmbededGlove.py 
       ```
 * Decision trees:
-  * run the model (FeatureSelection):
+   * run the logistic regression model (FeatureSelection) to show the feature importance and two performances with two encodings:
+    ```bat
+    python Logistic_Regression_for_weights.py 
+    ```
+    * run SkDecision Tree model (FeatureSelection) to show the accuracy with OneHot and Binary encoding:
+    ```bat
+    python Decision_tree.py 
+    ```
+  
+  * run the decision tree model (FeatureSelection) which is implemented step by step:
     ```bat
     python decision_tree.py 
     ```
