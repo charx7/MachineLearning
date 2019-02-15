@@ -70,7 +70,7 @@ It is advised to run the code while in the proper directories, as indicated in t
     ```
     * run SkDecision Tree model (FeatureSelection) to show the accuracy with OneHot and Binary encoding:
     ```bat
-    python Decision_tree.py 
+    python Decision_tree_under_two_encoding.py
     ```
   
   * run the decision tree model (FeatureSelection) which is implemented step by step:
