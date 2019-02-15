@@ -24,6 +24,10 @@ conda env create -f gpu-environment.yml
 ```bat
 conda env create -f environment.yml
 ```
+## The environment for running the decision tree model:
+```bat
+conda env create -f cpu-environment.yml
+```
 
 ## Running the code
 It is advised to run the code while in the proper directories, as indicated in the parentheses.
